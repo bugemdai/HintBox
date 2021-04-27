@@ -6,16 +6,36 @@
     xmlns:opencv="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="@color/white"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
     <org.opencv.android.JavaCameraView
         android:id="@+id/myCameraView"
         android:layout_width="match_parent"
-        android:layout_height="370dp"
+        android:layout_height="350dp"
         android:visibility="visible"
         opencv:camera_id="any"
         app:show_fps="true"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:id="@+id/bottom_nav"
+            app:menu="@menu/bottom_nav"
+            android:layout_alignParentBottom="true"
+            android:background="@color/white"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="370dp"
+            android:id="@+id/frame_layout"
+            android:layout_above="@+id/bottom_nav"/>
+
+    </RelativeLayout>
 
 </LinearLayout>
