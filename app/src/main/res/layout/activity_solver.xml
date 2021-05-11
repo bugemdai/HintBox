@@ -12,21 +12,27 @@
         android:orientation="vertical"
         >
 
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:layout_marginVertical="15dp"
+            />
+
 
 
     </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="45dp"
-        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
-        android:background="@color/yellow"
-        app:elevation="0dp"
-        app:itemIconSize="25dp"
-        app:labelVisibilityMode="unlabeled"
+        android:layout_alignParentBottom="true"
+        android:background="@color/gray"
+        android:id="@+id/bottom_nav"
         app:menu="@menu/bottom_nav"
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconSize="25dp"
         />
 
 </RelativeLayout>

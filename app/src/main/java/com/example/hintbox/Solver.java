@@ -49,12 +49,6 @@ public class Solver extends AppCompatActivity {
             }
         });
 
-        // Full initialization, which will take about 200ms.
-        // The solver will be about 5x~10x slower without full initialization.
-        long startTime = System.nanoTime();
-        Search.init();
-        System.out.println("Init time: " + (System.nanoTime() - startTime) / 1.0E6 + " ms");
-
         /** prepare scrambledCube as
          *
          *             |************|
@@ -81,52 +75,62 @@ public class Solver extends AppCompatActivity {
          *
          * -> U1 U2 ... U9 R1 ... R9 F1 ... F9 D1 ... D9 L1 ... L9 B1 ... B9
          */
-//        String scrambledCube = "DUUBULDBFRBFRRULLLBRDFFFBLURDBFDFDRFRULBLUFDURRBLBDUDL";
-//        String scrambledCube =   "FRRRUUDDBURDURDDUBBFLBFFURFFFLBDLULURDLDLLFULBBDBBLRFR";
-        Bundle extra = getIntent().getExtras();
-        String scrambledCube =   extra.getString("cube");
-        // scrambledCube can also be optained by specific moves
-//        scrambledCube = Tools.fromScramble("R L2 D R F U2 F' L F' B2 D' R2 B2 R2 L2 U F2 L2 B2 U2 R2");
-        System.out.println(scrambledCube);
 
-//        simpleSolve(scrambledCube);
-//        outputControl(scrambledCube);
-        findShorterSolutions(scrambledCube);
-//        continueSearch(scrambledCube);
+        Bundle extra = getIntent().getExtras();
+        String scrambledCube = extra.getString("cube");
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                outputControl(scrambledCube);
+                findShorterSolutions(scrambledCube);
+                continueSearch(scrambledCube);
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
-    public static void simpleSolve(String scrambledCube) {
-        String result = new Search().solution(scrambledCube, 21, 100000000, 0, 0);
-        System.out.println(result);
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     public static void outputControl(String scrambledCube) {
+        System.out.println("outputControl #1");
         String result = new Search().solution(scrambledCube, 21, 100000000, 0, Search.APPEND_LENGTH);
         System.out.println(result);
 
+        System.out.println("outputControl #2");
         result = new Search().solution(scrambledCube, 21, 100000000, 0, Search.USE_SEPARATOR | Search.INVERSE_SOLUTION);
         System.out.println(result);
     }
 
     public static void findShorterSolutions(String scrambledCube) {
+        System.out.println("findShorterSolutions");
         String result = new Search().solution(scrambledCube, 21, 100000000, 10000, 0);
         System.out.println(result);
     }
 
     public static void continueSearch(String scrambledCube) {
+        System.out.println("continueSearch #1");
         Search searchObj = new Search();
         String result = searchObj.solution(scrambledCube, 21, 500, 0, 0);
         System.out.println(result);
 
+        System.out.println("continueSearch #2");
         result = searchObj.next(500, 0, 0);
         System.out.println(result);
 
+        System.out.println("continueSearch #3");
         result = searchObj.next(500, 0, 0);
         System.out.println(result);
 
+        System.out.println("continueSearch #4");
         result = searchObj.next(500, 0, 0);
         System.out.println(result);
 
+        System.out.println("continueSearch #5");
         result = searchObj.next(500, 0, 0);
         System.out.println(result);
     }
