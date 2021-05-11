@@ -11,10 +11,12 @@ import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.slider.RangeSlider;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -27,13 +29,15 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.List;
+
 public class SettingCube extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final String TAG = "OCVSample::Activity";
     private CameraBridgeViewBase mOpenCvCameraView;
-    private Mat mFrame;
+    private Mat mFrame, mMask, mResult;
 
-    private SeekBar seekBarHl, seekBarHh, seekBarSl, seekBarSh, seekBarVl, seekBarVh;
+    private RangeSlider rangeH, rangeS, rangeV;
     private TextView tvHh, tvHl, tvSl, tvSh, tvVl, tvVh;
     private ColorHSV yellowHsv, orangeHsv, greenHsv, blueHsv, whiteHsv, redHsv, settingHsv;
     private Scalar scalarLowSetting, scalarHightSetting;
@@ -76,6 +80,14 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
                 int id = item.getItemId();
 
                 switch (id) {
+                    case R.id.home:
+                        startActivity(new Intent(getApplicationContext(), Home.class));
+                        overridePendingTransition(0,0);
+                        return true;
+                    case R.id.solver:
+                        startActivity(new Intent(getApplicationContext(), Solver.class));
+                        overridePendingTransition(0,0);
+                        return true;
                     case R.id.cube:
                         startActivity(new Intent(getApplicationContext(), MainActivity.class));
                         overridePendingTransition(0,0);
@@ -88,7 +100,6 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
             }
         });
 
-
         yellowHsv = setSettingHSV("Y", "yellow");
         greenHsv = setSettingHSV("G", "green");
         orangeHsv = setSettingHSV("O", "orange");
@@ -100,12 +111,16 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
         scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
         scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
 
+        FrameLayout frameLayout = findViewById(R.id.frame_layout);
+
         buttonYellow = findViewById(R.id.yellow);
         buttonYellow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 settingHsv = yellowHsv;
                 setProgress(yellowHsv);
+                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
+                scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
         });
 
@@ -115,6 +130,8 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
             public void onClick(View v) {
                 settingHsv = blueHsv;
                 setProgress(blueHsv);
+                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
+                scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
         });
 
@@ -124,6 +141,8 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
             public void onClick(View v) {
                 settingHsv = greenHsv;
                 setProgress(greenHsv);
+                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
+                scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
         });
 
@@ -133,6 +152,8 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
             public void onClick(View v) {
                 settingHsv = orangeHsv;
                 setProgress(orangeHsv);
+                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
+                scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
         });
 
@@ -142,6 +163,8 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
             public void onClick(View v) {
                 settingHsv = redHsv;
                 setProgress(redHsv);
+                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
+                scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
         });
 
@@ -151,6 +174,8 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
             public void onClick(View v) {
                 settingHsv = whiteHsv;
                 setProgress(whiteHsv);
+                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
+                scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
         });
 
@@ -167,137 +192,63 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
             }
         });
 
-        tvHl = findViewById(R.id.tvhl);
-        seekBarHl = findViewById(R.id.SeekHl);
-        seekBarHl.setProgress(settingHsv.getLowH());
-        seekBarHl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        rangeH = findViewById(R.id.rangeH);
+        rangeH.addOnSliderTouchListener(new RangeSlider.OnSliderTouchListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                settingHsv.setLowH(progress);
-                tvHl.setText("Hlow " + progress);
+            public void onStartTrackingTouch(@NonNull RangeSlider slider) {
+                List<Float> list = rangeH.getValues();
+                float min = list.get(0);
+                float max = list.get(1);
+                settingHsv.setLowH((int) min);
+                settingHsv.setHightH((int) max);
                 scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        tvHh = findViewById(R.id.tvhh);
-        seekBarHh = findViewById(R.id.SeekHh);
-        seekBarHh.setProgress(settingHsv.getHightH());
-        seekBarHh.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                settingHsv.setHightH(progress);
-                tvHh.setText("Hhight " + progress);
                 scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+            public void onStopTrackingTouch(@NonNull RangeSlider slider) {
 
             }
         });
 
-        tvSl = findViewById(R.id.tvsl);
-        seekBarSl = findViewById(R.id.SeekSl);
-        seekBarSl.setProgress(settingHsv.getLowS());
-        seekBarSl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        rangeS = findViewById(R.id.rangeS);
+        rangeS.addOnSliderTouchListener(new RangeSlider.OnSliderTouchListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                settingHsv.setLowS(progress);
-                tvSl.setText("Slow " + progress);
-                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowV(), settingHsv.getLowS());
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        tvSh = findViewById(R.id.tvsh);
-        seekBarSh = findViewById(R.id.SeekSh);
-        seekBarSh.setProgress(settingHsv.getHightS());
-        seekBarSh.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                settingHsv.setHightS(progress);
-                tvSh.setText("Shight " + progress);
+            public void onStartTrackingTouch(@NonNull RangeSlider slider) {
+                List<Float> list = rangeS.getValues();
+                float min = list.get(0);
+                float max = list.get(1);
+                settingHsv.setLowS((int) min);
+                settingHsv.setHightS((int) max);
+                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
                 scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+            public void onStopTrackingTouch(@NonNull RangeSlider slider) {
 
             }
         });
 
-        tvVl = findViewById(R.id.tvvl);
-        seekBarVl = findViewById(R.id.SeekVL);
-        seekBarVl.setProgress(settingHsv.getLowV());
-        seekBarVl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        rangeV = findViewById(R.id.rangeV);
+        rangeV.addOnSliderTouchListener(new RangeSlider.OnSliderTouchListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                settingHsv.setLowV(progress);
-                tvVl.setText("Vlow " + progress);
-                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowV(), settingHsv.getLowS());
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        tvVh = findViewById(R.id.tvvh);
-        seekBarVh = findViewById(R.id.SeekVH);
-        seekBarVh.setProgress(settingHsv.getHightV());
-        seekBarVh.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                settingHsv.setHightV(progress);
-                tvVh.setText("Vhight " + progress);
+            public void onStartTrackingTouch(@NonNull RangeSlider slider) {
+                List<Float> list = rangeV.getValues();
+                float min = list.get(0);
+                float max = list.get(1);
+                settingHsv.setLowV((int) min);
+                settingHsv.setHightV((int) max);
+                scalarLowSetting = new Scalar(settingHsv.getLowH(), settingHsv.getLowS(), settingHsv.getLowV());
                 scalarHightSetting = new Scalar(settingHsv.getHightH(), settingHsv.getHightS(), settingHsv.getHightV());
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+            public void onStopTrackingTouch(@NonNull RangeSlider slider) {
 
             }
         });
+
     }
 
     @Override
@@ -328,26 +279,21 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
     @Override
     public void onCameraViewStarted(int width, int height) {
         mFrame = new Mat(height, width, CvType.CV_8UC4);
+        mMask = new Mat(height, width, CvType.CV_8UC4);
+        mResult = new Mat(height, width, CvType.CV_8UC4);
     }
 
     @Override
     public void onCameraViewStopped() {
         mFrame.release();
+        mMask.release();
+        mResult.release();
     }
 
     public void setProgress (ColorHSV colorHSV) {
-        seekBarHl.setProgress(colorHSV.getLowH());
-        seekBarHh.setProgress(colorHSV.getHightH());
-        seekBarSl.setProgress(colorHSV.getLowS());
-        seekBarSh.setProgress(colorHSV.getHightS());
-        seekBarVl.setProgress(colorHSV.getLowV());
-        seekBarVh.setProgress(colorHSV.getHightV());
-        tvHl.setText("Hlow " + colorHSV.getLowH());
-        tvHh.setText("Hhight " + colorHSV.getHightH());
-        tvSl.setText("Slow " + colorHSV.getLowS());
-        tvSh.setText("Shight " + colorHSV.getHightS());
-        tvVl.setText("Vlow " + colorHSV.getLowV());
-        tvVh.setText("Vhight " + colorHSV.getHightV());
+        rangeH.setValues((float) colorHSV.getLowH(), (float) colorHSV.getHightH());
+        rangeS.setValues((float) colorHSV.getLowS(), (float) colorHSV.getHightS());
+        rangeV.setValues((float) colorHSV.getLowV(), (float) colorHSV.getHightV());
     }
 
     public ColorHSV setSettingHSV (String color, String name) {
@@ -384,9 +330,12 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
         Imgproc.resize(mFrame, mFrame, mFrame.size(), 0,0, 0);
         Core.flip(mFrame, mFrame, 1 );
 
-        Imgproc.cvtColor(mFrame, mFrame, Imgproc.COLOR_BGR2HSV);
-        Core.inRange(mFrame, scalarLowSetting, scalarHightSetting, mFrame);
+        Imgproc.cvtColor(mFrame, mFrame, Imgproc.COLOR_BGR2HSV_FULL);
+        Core.inRange(mFrame, scalarLowSetting, scalarHightSetting, mMask);
 
-        return mFrame;
+//        Imgproc.cvtColor(mFrame, mFrame, Imgproc.COLOR_HSV2BGR_FULL);
+//        Core.bitwise_and(mFrame, mFrame, mResult, mMask);
+
+        return mMask;
     }
 }

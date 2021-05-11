@@ -6,36 +6,191 @@
     xmlns:opencv="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/gray"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    >
 
     <org.opencv.android.JavaCameraView
         android:id="@+id/myCameraView"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="340dp"
         android:visibility="visible"
         opencv:camera_id="any"
-        app:show_fps="true"/>
+        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="16dp"
+        />
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/frame_layout"
+        android:layout_above="@+id/bottom_nav"
+        android:orientation="vertical"
+        android:background="@color/gray"
+        >
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:id="@+id/bottom_nav"
-            app:menu="@menu/bottom_nav"
-            android:layout_alignParentBottom="true"
-            android:background="@color/white"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
 
-        <FrameLayout
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sideView"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Up" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="3dp"
+                android:orientation="horizontal"
+                >
+
+                <Button
+                    android:id="@+id/button1"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+                <Button
+                    android:id="@+id/button2"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+                <Button
+                    android:id="@+id/button3"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:layout_gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginVertical="3dp"
+                >
+
+                <Button
+                    android:id="@+id/button4"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+                <Button
+                    android:id="@+id/button5"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+                <Button
+                    android:id="@+id/button6"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:layout_gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginVertical="3dp"
+                >
+
+                <Button
+                    android:id="@+id/button7"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+                <Button
+                    android:id="@+id/button8"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+                <Button
+                    android:id="@+id/button9"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginHorizontal="3dp"
+                    android:layout_gravity="center"
+                    />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
-            android:layout_height="370dp"
-            android:id="@+id/frame_layout"
-            android:layout_above="@+id/bottom_nav"/>
+            android:layout_height="80dp"
+            android:layout_gravity="bottom"
+            >
 
-    </RelativeLayout>
+            <com.google.android.material.bottomappbar.BottomAppBar
+                android:id="@+id/bottomAppbar"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_gravity="bottom"
+                app:backgroundTint="@color/gray"
+                app:layout_anchor="@+id/bottomAppbar"
+                app:layout_anchorGravity="bottom|center"
+                >
+
+                <com.google.android.material.bottomnavigation.BottomNavigationView
+                    android:id="@+id/detection_nav"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@color/gray"
+                    app:elevation="0dp"
+                    app:itemIconSize="25dp"
+                    app:labelVisibilityMode="unlabeled"
+                    app:menu="@menu/detection_nav"
+                    />
+
+            </com.google.android.material.bottomappbar.BottomAppBar>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/cube"
+                app:backgroundTint="@color/gray"
+                app:rippleColor="@color/black"
+                app:layout_anchor="@id/bottomAppbar"
+                app:shapeAppearanceOverlay="@style/FabDiamondOverlay"
+                />
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    </FrameLayout>
 
 </LinearLayout>
