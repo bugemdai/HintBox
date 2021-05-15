@@ -16,10 +16,87 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:indeterminate="true"
-            android:layout_marginVertical="15dp"
             />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text1"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:layout_marginVertical="15dp"
+            android:layout_marginHorizontal="18dp"
+            />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text2"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:layout_marginVertical="15dp"
+            android:layout_marginHorizontal="18dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text3"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:layout_marginVertical="15dp"
+            android:layout_marginHorizontal="18dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text4"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:layout_marginVertical="15dp"
+            android:layout_marginHorizontal="18dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text5"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:layout_marginVertical="15dp"
+            android:layout_marginHorizontal="18dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text6"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:layout_marginVertical="15dp"
+            android:layout_marginHorizontal="18dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text7"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:layout_marginVertical="15dp"
+            android:layout_marginHorizontal="18dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text8"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:layout_marginVertical="15dp"
+            android:layout_marginHorizontal="18dp"
+            />
 
     </LinearLayout>
 

@@ -1,16 +1,24 @@
 package com.example.hintbox;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.List;
+
 public class Home extends AppCompatActivity {
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +51,15 @@ public class Home extends AppCompatActivity {
                 return false;
             }
         });
+
+        ActivityManager am = (ActivityManager)this.getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> rs = am.getRunningServices(50);
+
+        for (int i=0; i<rs.size(); i++) {
+            ActivityManager.RunningServiceInfo
+                    rsi = rs.get(i);
+            Log.i("Service", "Process " + rsi.process + " with component " + rsi.service.getClassName());
+        }
 
     }
 }

@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Mat mFrame;
 
     private ColorHSV yellowHsv, orangeHsv, greenHsv, blueHsv, whiteHsv, redHsv;
-    private Cuber[] temp, front, back, left, right, up, down;;
+    private Cuber[] temp, front, back, left, right, up, down, clear;
     private Button print;
     private String globalSide = "";
     private Boolean consrolFront, consrolBack, consrolLeft, consrolRight, consrolUp, consrolDown;
@@ -96,6 +96,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         blueHsv = setSettingHSV("B", "blue");
 
         temp = new Cuber[9];
+        clear = new Cuber[9];
+
+        for (int i = 0; i < 9; i++){
+            Cuber c = new Cuber(1, 1, 1, 1, "c");
+            clear[i] = c;
+        }
 
         if (globalSide == "")
             globalSide = "up";
@@ -173,33 +179,34 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                     case R.id.start:
                         String cube = "";
                         String u, r, f, d, l, b;
-//                        u = up[4].getColor();
-//                        r = right[4].getColor();
-//                        f = front[4].getColor();
-//                        d = down[4].getColor();
-//                        l = left[4].getColor();
-//                        b = back[4].getColor();
-//
-//                        for (Cuber cuber : up) {
-//                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                        }
-//                        for (Cuber cuber : right) {
-//                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                        }
-//                        for (Cuber cuber : front) {
-//                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                        }
-//                        for (Cuber cuber : down) {
-//                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                        }
-//                        for (Cuber cuber : left) {
-//                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                        }
-//                        for (Cuber cuber : back) {
-//                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                        }
 
-                        cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
+                        u = up[4].getColor();
+                        r = right[4].getColor();
+                        f = front[4].getColor();
+                        d = down[4].getColor();
+                        l = left[4].getColor();
+                        b = back[4].getColor();
+
+                        for (Cuber cuber : up) {
+                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                        }
+                        for (Cuber cuber : right) {
+                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                        }
+                        for (Cuber cuber : front) {
+                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                        }
+                        for (Cuber cuber : down) {
+                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                        }
+                        for (Cuber cuber : left) {
+                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                        }
+                        for (Cuber cuber : back) {
+                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                        }
+
+//                        cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
 
                         Intent intent = new Intent(getApplicationContext(), Solver.class);
                         intent.putExtra("cube", cube);
@@ -280,6 +287,99 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         });
 
         sideView = findViewById(R.id.sideView);
+
+        save = findViewById(R.id.fab);
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (globalSide){
+                    case "up":
+                        if (!consrolUp) {
+                            consrolUp = true;
+                            up = temp;
+                            temp = new Cuber[9];
+                            globalSide = "right";
+                            sideView.setText("right");
+                            if (consrolRight) {
+                                setStaticButton(right);
+                            } else {
+                                setStaticButton(clear);
+                            }
+                        }
+                        break;
+                    case "right":
+                        if (!consrolRight) {
+                            consrolRight = true;
+                            right = temp;
+                            temp = new Cuber[9];
+                            globalSide = "front";
+                            sideView.setText("front");
+                            if (consrolFront) {
+                                setStaticButton(front);
+                            } else {
+                                setStaticButton(clear);
+                            }
+                        }
+                        break;
+                    case "front":
+                        if (!consrolFront) {
+                            consrolFront = true;
+                            front = temp;
+                            temp = new Cuber[9];
+                            globalSide = "down";
+                            sideView.setText("down");
+                            if (consrolDown) {
+                                setStaticButton(down);
+                            } else {
+                                setStaticButton(clear);
+                            }
+                        }
+                        break;
+                    case "down":
+                        if (!consrolDown) {
+                            consrolDown = true;
+                            down = temp;
+                            temp = new Cuber[9];
+                            globalSide = "left";
+                            sideView.setText("left");
+                            if (consrolLeft) {
+                                setStaticButton(left);
+                            } else {
+                                setStaticButton(clear);
+                            }
+                        }
+                        break;
+                    case "left":
+                        if (!consrolLeft) {
+                            consrolLeft = true;
+                            left = temp;
+                            temp = new Cuber[9];
+                            globalSide = "back";
+                            sideView.setText("back");
+                            if (consrolBack) {
+                                setStaticButton(back);
+                            } else {
+                                setStaticButton(clear);
+                            }
+                        }
+                        break;
+                    case "back":
+                        if (!consrolBack) {
+                            consrolBack = true;
+                            back = temp;
+                            temp = new Cuber[9];
+                            globalSide = "up";
+                            sideView.setText("up");
+                            if (consrolUp) {
+                                setStaticButton(up);
+                            } else {
+                                setStaticButton(clear);
+                            }
+                        }
+                        break;
+                }
+            }
+        });
     }
 
     public String colorConvectore (String u_, String r_, String f_, String d_, String l_, String b_, String cube) {
@@ -294,23 +394,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public void setStaticButton (Cuber[] cubers) {
         paintButton(button1, cubers[0].getColor());
-        Log.d(globalSide + " Color b1:", cubers[0].getColor());
         paintButton(button2, cubers[1].getColor());
-        Log.d(globalSide + " Color b2:", cubers[1].getColor());
         paintButton(button3, cubers[2].getColor());
-        Log.d(globalSide + " Color b3:", cubers[2].getColor());
         paintButton(button4, cubers[3].getColor());
-        Log.d(globalSide + " Color b4:", cubers[3].getColor());
         paintButton(button5, cubers[4].getColor());
-        Log.d(globalSide + " Color b5:", cubers[4].getColor());
         paintButton(button6, cubers[5].getColor());
-        Log.d(globalSide + " Color b6:", cubers[5].getColor());
         paintButton(button7, cubers[6].getColor());
-        Log.d(globalSide + " Color b7:", cubers[6].getColor());
         paintButton(button8, cubers[7].getColor());
-        Log.d(globalSide + " Color b8:", cubers[7].getColor());
         paintButton(button9, cubers[8].getColor());
-        Log.d(globalSide + " Color b9:", cubers[8].getColor());
     }
 
     @Override
@@ -489,17 +580,16 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 cnt = findCubeContours(mMat, colorHSV, consrolDown);
                 break;
         }
+
         for (MatOfPoint point : cnt) {
             rectContours = Imgproc.boundingRect(point);
             Imgproc.rectangle(mMat, rectContours.tl(), rectContours.br(), colorLine, 5);
-            Imgproc.putText(mMat, String.valueOf(String.valueOf(rectContours.x) + " " + String.valueOf(rectContours.y)), new Point(rectContours.x, rectContours.y), Core.FONT_HERSHEY_SIMPLEX, 1.0,
-                    new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
-
+//            Imgproc.putText(mMat, String.valueOf(String.valueOf(rectContours.x) + " " + String.valueOf(rectContours.y)), new Point(rectContours.x, rectContours.y), Core.FONT_HERSHEY_SIMPLEX, 1.0,
+//                    new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
         }
+
         return cnt;
     }
-
-
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
@@ -516,8 +606,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         drawCubeContours(mFrame, yellowHsv, new Scalar(200, 255, 0));
         drawCubeContours(mFrame, orangeHsv, new Scalar(255, 165, 0));
         drawCubeContours(mFrame, whiteHsv, new Scalar(255, 255, 255));
-
-
 
         return mFrame;
     }

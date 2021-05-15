@@ -8,13 +8,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 public class Solver extends AppCompatActivity {
+
+    public TextView text1, text2, text3, text4, text5, text6, text7, text8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,59 +84,65 @@ public class Solver extends AppCompatActivity {
         Bundle extra = getIntent().getExtras();
         String scrambledCube = extra.getString("cube");
 
+        text1 = findViewById(R.id.text1);
+        text2 = findViewById(R.id.text2);
+        text3 = findViewById(R.id.text3);
+        text4 = findViewById(R.id.text4);
+        text5 = findViewById(R.id.text5);
+        text6 = findViewById(R.id.text6);
+        text7 = findViewById(R.id.text6);
+        text8 = findViewById(R.id.text6);
+
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                outputControl(scrambledCube);
-                findShorterSolutions(scrambledCube);
-                continueSearch(scrambledCube);
+                outputControl(scrambledCube, text1, text2);
+                continueSearch(scrambledCube, text3, text4);
+                findShorterSolutions(scrambledCube, text5);
+
             }
         };
         Thread thread = new Thread(runnable);
         thread.start();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    private void setText(final TextView text,final String value){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                text.setText(value);
+            }
+        });
     }
 
-    public static void outputControl(String scrambledCube) {
-        System.out.println("outputControl #1");
+    public void outputControl(String scrambledCube, final TextView t1, final TextView t2) {
         String result = new Search().solution(scrambledCube, 21, 100000000, 0, Search.APPEND_LENGTH);
-        System.out.println(result);
+        setText(t1, result);
 
-        System.out.println("outputControl #2");
         result = new Search().solution(scrambledCube, 21, 100000000, 0, Search.USE_SEPARATOR | Search.INVERSE_SOLUTION);
-        System.out.println(result);
+        setText(t2, result);
     }
 
-    public static void findShorterSolutions(String scrambledCube) {
-        System.out.println("findShorterSolutions");
+    public void findShorterSolutions(String scrambledCube, final TextView t1) {
         String result = new Search().solution(scrambledCube, 21, 100000000, 10000, 0);
-        System.out.println(result);
+        setText(t1, result);
     }
 
-    public static void continueSearch(String scrambledCube) {
-        System.out.println("continueSearch #1");
+    public void continueSearch(String scrambledCube, final TextView t1, final TextView t2) {
         Search searchObj = new Search();
         String result = searchObj.solution(scrambledCube, 21, 500, 0, 0);
-        System.out.println(result);
+        setText(t1, result);
 
-        System.out.println("continueSearch #2");
         result = searchObj.next(500, 0, 0);
-        System.out.println(result);
+        setText(t2, result);
 
-        System.out.println("continueSearch #3");
-        result = searchObj.next(500, 0, 0);
-        System.out.println(result);
-
-        System.out.println("continueSearch #4");
-        result = searchObj.next(500, 0, 0);
-        System.out.println(result);
-
-        System.out.println("continueSearch #5");
-        result = searchObj.next(500, 0, 0);
-        System.out.println(result);
+//        result = searchObj.next(1000, 0, 0);
+//        setText(t3, result);
+//
+//        result = searchObj.next(1500, 0, 0);
+//        setText(t4, result);
+//
+//        result = searchObj.next(2000, 0, 0);
+//        setText(t5, result);
     }
 }
