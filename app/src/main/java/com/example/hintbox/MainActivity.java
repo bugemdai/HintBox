@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private FloatingActionButton save;
     private TextView side;
     private Button sideView;
+    private String pointer = "";
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
 
         if (globalSide == "")
-            globalSide = "up";
+            globalSide = "front";
 
         consrolFront = false;
         consrolBack = false;
@@ -138,41 +139,41 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 switch (id) {
                     case R.id.prev:
                         switch (globalSide){
-                            case "up":
-                                globalSide = "back";
-                                sideView.setText("back");
-                                if (consrolBack)
-                                    setStaticButton(back);
-                                break;
-                            case "back":
-                                globalSide = "left";
-                                sideView.setText("left");
-                                if (consrolLeft)
-                                    setStaticButton(left);
-                                break;
-                            case "left":
+                            case "front":
                                 globalSide = "down";
                                 sideView.setText("down");
                                 if (consrolDown)
                                     setStaticButton(down);
                                 break;
                             case "down":
-                                globalSide = "front";
-                                sideView.setText("front");
-                                if (consrolFront)
-                                    setStaticButton(front);
+                                globalSide = "up";
+                                sideView.setText("up");
+                                if (consrolUp)
+                                    setStaticButton(up);
                                 break;
-                            case "front":
+                            case "up":
+                                globalSide = "left";
+                                sideView.setText("left");
+                                if (consrolLeft)
+                                    setStaticButton(left);
+                                break;
+                            case "left":
+                                globalSide = "back";
+                                sideView.setText("back");
+                                if (consrolBack)
+                                    setStaticButton(back);
+                                break;
+                            case "back":
                                 globalSide = "right";
                                 sideView.setText("right");
                                 if (consrolRight)
                                     setStaticButton(right);
                                 break;
                             case "right":
-                                globalSide = "up";
-                                sideView.setText("up");
-                                if (consrolUp)
-                                    setStaticButton(up);
+                                globalSide = "front";
+                                sideView.setText("front");
+                                if (consrolFront)
+                                    setStaticButton(front);
                                 break;
                         }
                         return true;
@@ -180,33 +181,33 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                         String cube = "";
                         String u, r, f, d, l, b;
 
-                        u = up[4].getColor();
-                        r = right[4].getColor();
-                        f = front[4].getColor();
-                        d = down[4].getColor();
-                        l = left[4].getColor();
-                        b = back[4].getColor();
+//                            u = up[4].getColor();
+//                            r = right[4].getColor();
+//                            f = front[4].getColor();
+//                            d = down[4].getColor();
+//                            l = left[4].getColor();
+//                            b = back[4].getColor();
+//
+//                            for (Cuber cuber : up) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : right) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : front) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : down) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : left) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : back) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
 
-                        for (Cuber cuber : up) {
-                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                        }
-                        for (Cuber cuber : right) {
-                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                        }
-                        for (Cuber cuber : front) {
-                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                        }
-                        for (Cuber cuber : down) {
-                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                        }
-                        for (Cuber cuber : left) {
-                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                        }
-                        for (Cuber cuber : back) {
-                            cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                        }
-
-//                        cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
+                        cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
 
                         Intent intent = new Intent(getApplicationContext(), Solver.class);
                         intent.putExtra("cube", cube);
@@ -243,41 +244,41 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                         return true;
                     case R.id.next:
                         switch (globalSide){
-                            case "up":
+                            case "front":
                                 globalSide = "right";
                                 sideView.setText("right");
                                 if (consrolRight)
                                     setStaticButton(right);
                                 break;
                             case "right":
-                                globalSide = "front";
-                                sideView.setText("front");
-                                if (consrolFront)
-                                    setStaticButton(front);
-                                break;
-                            case "front":
-                                globalSide = "down";
-                                sideView.setText("down");
-                                if (consrolDown)
-                                    setStaticButton(down);
-                                break;
-                            case "down":
-                                globalSide = "left";
-                                sideView.setText("left");
-                                if (consrolLeft)
-                                    setStaticButton(left);
-                                break;
-                            case "left":
                                 globalSide = "back";
                                 sideView.setText("back");
                                 if (consrolBack)
                                     setStaticButton(back);
                                 break;
                             case "back":
+                                globalSide = "left";
+                                sideView.setText("left");
+                                if (consrolLeft)
+                                    setStaticButton(left);
+                                break;
+                            case "left":
                                 globalSide = "up";
                                 sideView.setText("up");
                                 if (consrolUp)
                                     setStaticButton(up);
+                                break;
+                            case "up":
+                                globalSide = "down";
+                                sideView.setText("down");
+                                if (consrolDown)
+                                    setStaticButton(down);
+                                break;
+                            case "down":
+                                globalSide = "front";
+                                sideView.setText("front");
+                                if (consrolFront)
+                                    setStaticButton(front);
                                 break;
                         }
                         return true;
@@ -293,88 +294,313 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             @Override
             public void onClick(View v) {
                 switch (globalSide){
-                    case "up":
-                        if (!consrolUp) {
-                            consrolUp = true;
-                            up = temp;
-                            temp = new Cuber[9];
-                            globalSide = "right";
-                            sideView.setText("right");
-                            if (consrolRight) {
-                                setStaticButton(right);
-                            } else {
-                                setStaticButton(clear);
-                            }
+                    case "front":
+                        consrolFront = true;
+                        front = temp;
+                        temp = new Cuber[9];
+                        globalSide = "right";
+                        sideView.setText("right");
+                        Log.d("front", String.valueOf(consrolFront));
+
+                        if (consrolRight) {
+                            setStaticButton(right);
+                        } else {
+                            setStaticButton(clear);
                         }
+
+                        pointer = "R";
+                        Runnable runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable1 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "";
+                                    }
+                                };
+                                Thread thr = new Thread(runnable1);
+                                try {
+                                    thr.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr.start();
+                            }
+                        };
+                        Thread thread = new Thread(runnable);
+                        thread.start();
                         break;
                     case "right":
-                        if (!consrolRight) {
-                            consrolRight = true;
-                            right = temp;
-                            temp = new Cuber[9];
-                            globalSide = "front";
-                            sideView.setText("front");
-                            if (consrolFront) {
-                                setStaticButton(front);
-                            } else {
-                                setStaticButton(clear);
-                            }
+                        consrolRight = true;
+                        right = temp;
+                        temp = new Cuber[9];
+                        globalSide = "back";
+                        sideView.setText("back");
+                        Log.d("front", String.valueOf(consrolRight));
+
+                        if (consrolBack) {
+                            setStaticButton(back);
+                        } else {
+                            setStaticButton(clear);
                         }
-                        break;
-                    case "front":
-                        if (!consrolFront) {
-                            consrolFront = true;
-                            front = temp;
-                            temp = new Cuber[9];
-                            globalSide = "down";
-                            sideView.setText("down");
-                            if (consrolDown) {
-                                setStaticButton(down);
-                            } else {
-                                setStaticButton(clear);
+
+                        pointer = "R";
+                        runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable1 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "";
+                                    }
+                                };
+                                Thread thr = new Thread(runnable1);
+                                try {
+                                    thr.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr.start();
                             }
-                        }
-                        break;
-                    case "down":
-                        if (!consrolDown) {
-                            consrolDown = true;
-                            down = temp;
-                            temp = new Cuber[9];
-                            globalSide = "left";
-                            sideView.setText("left");
-                            if (consrolLeft) {
-                                setStaticButton(left);
-                            } else {
-                                setStaticButton(clear);
-                            }
-                        }
-                        break;
-                    case "left":
-                        if (!consrolLeft) {
-                            consrolLeft = true;
-                            left = temp;
-                            temp = new Cuber[9];
-                            globalSide = "back";
-                            sideView.setText("back");
-                            if (consrolBack) {
-                                setStaticButton(back);
-                            } else {
-                                setStaticButton(clear);
-                            }
-                        }
+                        };
+                        thread = new Thread(runnable);
+                        thread.start();
                         break;
                     case "back":
-                        if (!consrolBack) {
-                            consrolBack = true;
-                            back = temp;
-                            temp = new Cuber[9];
-                            globalSide = "up";
-                            sideView.setText("up");
-                            if (consrolUp) {
-                                setStaticButton(up);
-                            } else {
-                                setStaticButton(clear);
+                        consrolBack = true;
+                        back = temp;
+                        temp = new Cuber[9];
+                        globalSide = "left";
+                        sideView.setText("left");
+                        Log.d("front", String.valueOf(consrolBack));
+
+                        if (consrolLeft) {
+                            setStaticButton(left);
+                        } else {
+                            setStaticButton(clear);
+                        }
+
+                        pointer = "R";
+                        runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable1 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "";
+                                    }
+                                };
+                                Thread thr = new Thread(runnable1);
+                                try {
+                                    thr.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr.start();
                             }
+                        };
+                        thread = new Thread(runnable);
+                        thread.start();
+                        break;
+                    case "left":
+                        consrolLeft = true;
+                        left = temp;
+                        temp = new Cuber[9];
+                        globalSide = "up";
+                        sideView.setText("up");
+                        Log.d("front", String.valueOf(consrolLeft));
+
+                        if (consrolUp) {
+                            setStaticButton(up);
+                        } else {
+                            setStaticButton(clear);
+                        }
+
+                        pointer = "R";
+                        runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable1 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "";
+                                    }
+                                };
+                                Thread thr = new Thread(runnable1);
+                                try {
+                                    thr.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr.start();
+                            }
+                        };
+                        thread = new Thread(runnable);
+                        thread.start();
+
+                        Runnable runnable2 = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable3 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "U";
+                                    }
+                                };
+                                Thread thr1 = new Thread(runnable3);
+                                try {
+                                    thr1.sleep(1500);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr1.start();
+                            }
+                        };
+                        thread = new Thread(runnable2);
+                        thread.start();
+
+                        Runnable runnable3 = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable4 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "";
+                                    }
+                                };
+                                Thread thr1 = new Thread(runnable4);
+                                try {
+                                    thr1.sleep(2500);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr1.start();
+                            }
+                        };
+                        thread = new Thread(runnable3);
+                        thread.start();
+                        break;
+                    case "up":
+                        consrolUp = true;
+                        up = temp;
+                        temp = new Cuber[9];
+                        globalSide = "down";
+                        sideView.setText("down");
+                        Log.d("front", String.valueOf(consrolUp));
+
+                        if (consrolDown) {
+                            setStaticButton(down);
+                        } else {
+                            setStaticButton(clear);
+                        }
+
+                        pointer = "D";
+                        runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable1 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "";
+                                    }
+                                };
+                                Thread thr = new Thread(runnable1);
+                                try {
+                                    thr.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr.start();
+                            }
+                        };
+                        thread = new Thread(runnable);
+                        thread.start();
+
+                        runnable2 = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable3 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "D";
+                                    }
+                                };
+                                Thread thr1 = new Thread(runnable3);
+                                try {
+                                    thr1.sleep(1500);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr1.start();
+                            }
+                        };
+                        thread = new Thread(runnable2);
+                        thread.start();
+
+                        runnable3 = new Runnable() {
+                            @Override
+                            public void run() {
+                                Runnable runnable4 = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pointer = "";
+                                    }
+                                };
+                                Thread thr1 = new Thread(runnable4);
+                                try {
+                                    thr1.sleep(2500);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                thr1.start();
+                            }
+                        };
+                        thread = new Thread(runnable3);
+                        thread.start();
+                        break;
+                    case "down":
+                        consrolDown = true;
+                        down = temp;
+                        temp = new Cuber[9];
+                        globalSide = "front";
+                        sideView.setText("front");
+
+                        if (consrolFront && consrolRight && consrolBack && consrolLeft && consrolUp && consrolDown) {
+                            String cube = "";
+                            String u, r, f, d, l, b;
+
+//                            u = up[4].getColor();
+//                            r = right[4].getColor();
+//                            f = front[4].getColor();
+//                            d = down[4].getColor();
+//                            l = left[4].getColor();
+//                            b = back[4].getColor();
+//
+//                            for (Cuber cuber : up) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : right) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : front) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : down) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : left) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+//                            for (Cuber cuber : back) {
+//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+//                            }
+
+                            cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
+
+                            Intent intent = new Intent(getApplicationContext(), Solver.class);
+                            intent.putExtra("cube", cube);
+                            startActivity(intent);
+                            overridePendingTransition(0,0);
                         }
                         break;
                 }
@@ -581,13 +807,117 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 break;
         }
 
-        for (MatOfPoint point : cnt) {
-            rectContours = Imgproc.boundingRect(point);
-            Imgproc.rectangle(mMat, rectContours.tl(), rectContours.br(), colorLine, 5);
-//            Imgproc.putText(mMat, String.valueOf(String.valueOf(rectContours.x) + " " + String.valueOf(rectContours.y)), new Point(rectContours.x, rectContours.y), Core.FONT_HERSHEY_SIMPLEX, 1.0,
-//                    new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
-        }
+        switch (pointer) {
+            case "":
+                for (MatOfPoint point : cnt) {
+                    rectContours = Imgproc.boundingRect(point);
+                    Imgproc.rectangle(mMat, rectContours.tl(), rectContours.br(), colorLine, 5);
+//                  Imgproc.putText(mMat, String.valueOf(String.valueOf(rectContours.x) + " " + String.valueOf(rectContours.y)), new Point(rectContours.x, rectContours.y), Core.FONT_HERSHEY_SIMPLEX, 1.0,
+//                          new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
+                }
+                break;
+            case "R":
+                Point fPoint = new Point();
+                Point sPoint = new Point();
+                fPoint.x = 120;
+                fPoint.y = 200;
+                sPoint.x = 520;
+                sPoint.y = 200;
+                Point hightFPoint = new Point();
+                hightFPoint.x = 480;
+                hightFPoint.y = 160;
+                Point lowFPoint = new Point();
+                lowFPoint.x = 480;
+                lowFPoint.y = 240;
+                Imgproc.line(mMat, fPoint, sPoint, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, hightFPoint, sPoint, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, lowFPoint, sPoint, new Scalar(0, 70, 173), 5);
 
+                Point fPoint2 = new Point();
+                Point sPoint2 = new Point();
+                fPoint2.x = 120;
+                fPoint2.y = 400;
+                sPoint2.x = 520;
+                sPoint2.y = 400;
+                Point hightFPoint2 = new Point();
+                hightFPoint2.x = 480;
+                hightFPoint2.y = 360;
+                Point lowFPoint2 = new Point();
+                lowFPoint2.x = 480;
+                lowFPoint2.y = 440;
+                Imgproc.line(mMat, fPoint2, sPoint2, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, hightFPoint2, sPoint2, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, lowFPoint2, sPoint2, new Scalar(0, 70, 173), 5);
+                break;
+
+            case "U":
+                Point fPointUp = new Point();
+                Point sPointUp = new Point();
+                fPointUp.x = 200;
+                fPointUp.y = 120;
+                sPointUp.x = 200;
+                sPointUp.y = 520;
+                Point hightFPointUp = new Point();
+                hightFPointUp.x = 160;
+                hightFPointUp.y = 200;
+                Point lowFPointUp = new Point();
+                lowFPointUp.x = 240;
+                lowFPointUp.y = 200;
+                Imgproc.line(mMat, fPointUp, sPointUp, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, hightFPointUp, fPointUp, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, lowFPointUp, fPointUp, new Scalar(0, 70, 173), 5);
+
+                Point fPoint2Up2 = new Point();
+                Point sPoint2Up2 = new Point();
+                fPoint2Up2.x = 400;
+                fPoint2Up2.y = 120;
+                sPoint2Up2.x = 400;
+                sPoint2Up2.y = 520;
+                Point hightFPoint2Up2 = new Point();
+                hightFPoint2Up2.x = 360;
+                hightFPoint2Up2.y = 200;
+                Point lowFPoint2Up2 = new Point();
+                lowFPoint2Up2.x = 440;
+                lowFPoint2Up2.y = 200;
+                Imgproc.line(mMat, fPoint2Up2, sPoint2Up2, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, hightFPoint2Up2, fPoint2Up2, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, lowFPoint2Up2, fPoint2Up2, new Scalar(0, 70, 173), 5);
+                break;
+
+            case "D":
+                Point fPointDown = new Point();
+                Point sPointDown = new Point();
+                fPointDown.x = 200;
+                fPointDown.y = 120;
+                sPointDown.x = 200;
+                sPointDown.y = 520;
+                Point hightFPointDown = new Point();
+                hightFPointDown.x = 160;
+                hightFPointDown.y = 480;
+                Point lowFPointDown = new Point();
+                lowFPointDown.x = 240;
+                lowFPointDown.y = 480;
+                Imgproc.line(mMat, fPointDown, sPointDown, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, hightFPointDown, sPointDown, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, lowFPointDown, sPointDown, new Scalar(0, 70, 173), 5);
+
+                Point fPoint2Down2 = new Point();
+                Point sPoint2Down2 = new Point();
+                fPoint2Down2.x = 400;
+                fPoint2Down2.y = 120;
+                sPoint2Down2.x = 400;
+                sPoint2Down2.y = 520;
+                Point hightFPoint2Down2 = new Point();
+                hightFPoint2Down2.x = 360;
+                hightFPoint2Down2.y = 480;
+                Point lowFPoint2Down2 = new Point();
+                lowFPoint2Down2.x = 440;
+                lowFPoint2Down2.y = 480;
+                Imgproc.line(mMat, fPoint2Down2, sPoint2Down2, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, hightFPoint2Down2, sPoint2Down2, new Scalar(0, 70, 173), 5);
+                Imgproc.line(mMat, lowFPoint2Down2, sPoint2Down2, new Scalar(0, 70, 173), 5);
+                break;
+        }
         return cnt;
     }
 

@@ -80,10 +80,6 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
                 int id = item.getItemId();
 
                 switch (id) {
-                    case R.id.home:
-                        startActivity(new Intent(getApplicationContext(), Home.class));
-                        overridePendingTransition(0,0);
-                        return true;
                     case R.id.solver:
                         startActivity(new Intent(getApplicationContext(), Solver.class));
                         overridePendingTransition(0,0);
@@ -95,7 +91,6 @@ public class SettingCube extends AppCompatActivity implements CameraBridgeViewBa
                     case R.id.setting:
                         return true;
                 }
-
                 return false;
             }
         });
