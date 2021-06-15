@@ -178,9 +178,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                         }
                         return true;
                     case R.id.start:
-                        String cube = "";
-                        String u, r, f, d, l, b;
-
+                        startActivity(new Intent(getApplicationContext(), SettingCube.class));
+                        overridePendingTransition(0,0);
+                        return true;
+//                        String cube = "";
+//                        String u, r, f, d, l, b;
 //                            u = up[4].getColor();
 //                            r = right[4].getColor();
 //                            f = front[4].getColor();
@@ -206,14 +208,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 //                            for (Cuber cuber : back) {
 //                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
 //                            }
-
-                        cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
-
-                        Intent intent = new Intent(getApplicationContext(), Solver.class);
-                        intent.putExtra("cube", cube);
-                        startActivity(intent);
-                        overridePendingTransition(0,0);
-                        return true;
+//                        cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
+//                        Intent intent = new Intent(getApplicationContext(), Solver.class);
+//                        intent.putExtra("cube", cube);
+//                        startActivity(intent);
+//                        overridePendingTransition(0,0);
+//                        return true;
                     case R.id.clear:
                         switch (globalSide){
                             case "front":
@@ -569,33 +569,33 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                             String cube = "";
                             String u, r, f, d, l, b;
 
-//                            u = up[4].getColor();
-//                            r = right[4].getColor();
-//                            f = front[4].getColor();
-//                            d = down[4].getColor();
-//                            l = left[4].getColor();
-//                            b = back[4].getColor();
-//
-//                            for (Cuber cuber : up) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : right) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : front) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : down) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : left) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : back) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
+                            u = up[4].getColor();
+                            r = right[4].getColor();
+                            f = front[4].getColor();
+                            d = down[4].getColor();
+                            l = left[4].getColor();
+                            b = back[4].getColor();
 
-                            cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
+                            for (Cuber cuber : up) {
+                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                            }
+                            for (Cuber cuber : right) {
+                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                            }
+                            for (Cuber cuber : front) {
+                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                            }
+                            for (Cuber cuber : down) {
+                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                            }
+                            for (Cuber cuber : left) {
+                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                            }
+                            for (Cuber cuber : back) {
+                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
+                            }
+
+//                            cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
 
                             Intent intent = new Intent(getApplicationContext(), Solver.class);
                             intent.putExtra("cube", cube);

@@ -214,7 +214,7 @@ public class Search {
                     continue;
                 }
                 if (phase1PreMoves(maxPreMoves, -30, urfCubieCube[urfIdx], (int) (selfSym & 0xffff)) == 0) {
-                    return solution == null ? "Error 8" : solution.toString();
+                    return solution == null ? "Решение не найдено" : solution.toString();
                 }
             }
         }

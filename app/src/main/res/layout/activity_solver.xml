@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Solver">
+    tools:context=".Solver"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,30 +26,32 @@
             android:focusable="true"
             android:checkable="true"
             android:layout_marginHorizontal="18dp"
-            android:layout_marginVertical="15dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="4dp"
             android:id="@+id/card1"
-            android:visibility="invisible"
             >
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:background="@color/gray"
+                >
 
                 <TextView
                     style="@style/TextAppearance.AppCompat.Headline"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Title"
+                    android:text="1"
+                    android:paddingHorizontal="8dp"
                     />
 
                 <TextView
+                    android:id="@+id/text1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/text1"
-                    android:textSize="14dp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginVertical="4dp"
+                    android:paddingHorizontal="8dp"
                     />
 
             </LinearLayout>
@@ -62,30 +65,269 @@
             android:focusable="true"
             android:checkable="true"
             android:layout_marginHorizontal="18dp"
-            android:layout_marginVertical="15dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="4dp"
             android:id="@+id/card2"
-            android:visibility="invisible"
             >
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:background="#AAAAAA"
+                >
 
                 <TextView
                     style="@style/TextAppearance.AppCompat.Headline"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Title"
+                    android:paddingHorizontal="8dp"
+                    android:text="2" />
+
+                <TextView
+                    android:id="@+id/text2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp"
+                    android:paddingHorizontal="8dp"
+                    />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:checkable="true"
+            android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="4dp"
+            android:id="@+id/card3"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/yellow"
+                >
+
+                <TextView
+                    style="@style/TextAppearance.AppCompat.Headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="3"
+                    android:paddingHorizontal="8dp"
                     />
 
                 <TextView
+                    android:id="@+id/text3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/text2"
-                    android:textSize="14dp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginVertical="4dp"
+                    android:paddingHorizontal="8dp"
+                    />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:checkable="true"
+            android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="4dp"
+            android:id="@+id/card4"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/orange"
+                >
+
+                <TextView
+                    style="@style/TextAppearance.AppCompat.Headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="4"
+                    android:paddingHorizontal="8dp"
+                    />
+
+                <TextView
+                    android:id="@+id/text4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp"
+                    android:paddingHorizontal="8dp"
+                    />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:checkable="true"
+            android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="4dp"
+            android:id="@+id/card5"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/red"
+                >
+
+                <TextView
+                    style="@style/TextAppearance.AppCompat.Headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="5"
+                    android:paddingHorizontal="8dp"
+                    />
+
+                <TextView
+                    android:id="@+id/text5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp"
+                    android:paddingHorizontal="8dp"
+                    />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:checkable="true"
+            android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="4dp"
+            android:id="@+id/card6"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/green"
+                >
+
+                <TextView
+                    style="@style/TextAppearance.AppCompat.Headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="6"
+                    android:paddingHorizontal="8dp"
+                    />
+
+                <TextView
+                    android:id="@+id/text6"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp"
+                    android:paddingHorizontal="8dp"
+                    />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:checkable="true"
+            android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="4dp"
+            android:id="@+id/card7"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/blue"
+                >
+
+                <TextView
+                    style="@style/TextAppearance.AppCompat.Headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="7"
+                    android:paddingHorizontal="8dp"
+                    android:textColor="@color/gray"
+                    />
+
+                <TextView
+                    android:id="@+id/text7"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp"
+                    android:paddingHorizontal="8dp"
+                    android:textColor="@color/gray"
+                    />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:checkable="true"
+            android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="4dp"
+            android:id="@+id/card8"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/black"
+                >
+
+                <TextView
+                    style="@style/TextAppearance.AppCompat.Headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="8"
+                    android:paddingHorizontal="8dp"
+                    android:textColor="@color/gray"
+                    />
+
+                <TextView
+                    android:id="@+id/text8"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp"
+                    android:paddingHorizontal="8dp"
+                    android:textColor="@color/gray"
                     />
 
             </LinearLayout>
