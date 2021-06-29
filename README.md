@@ -2,6 +2,5 @@
 
 This repository contains a project for solving and analyzing Rubik's cube using OpenCv.
 
-![image](https://github.com/bugemdai/HintBox/blob/master/openCVLibrary343/analysis.gif){:width="20%"}
-
+![image](https://github.com/bugemdai/HintBox/blob/master/openCVLibrary343/analysis.gif)
 
