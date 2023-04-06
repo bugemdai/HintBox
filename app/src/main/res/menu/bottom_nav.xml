@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/solver"
+        android:title="Cube"
+        android:icon="@drawable/puzzle"
+        />
+
+    <item
+        android:id="@+id/cube"
+        android:title="Cube"
+        android:icon="@drawable/cube"
+        />
+    <item
+        android:id="@+id/setting"
+        android:title="Setting"
+        android:icon="@drawable/settings"
+        />
+</menu>
