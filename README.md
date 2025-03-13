@@ -73,13 +73,3 @@ HintBox - это Android приложение, предназначенное д
 ## Вклад
 
 Если вы хотите внести свой вклад в проект, пожалуйста, создайте pull request или откройте issue для обсуждения.
-
-## Лицензия
-
-Этот проект лицензирован под MIT License - подробности см. в файле LICENSE.
-
-
-
-This repository contains a project for solving and analyzing Rubik's cube using OpenCv.
-
-
