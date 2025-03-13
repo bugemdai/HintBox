@@ -68,21 +68,11 @@ public class Search {
     }
 
     public synchronized String solution(String facelets, int maxDepth, long probeMax, long probeMin, int verbose) {
-        int check = verify(facelets);
-        if (check != 0) {
-            return "Error " + Math.abs(check);
+        try {
+            initializeSearchParameters(facelets, maxDepth, probeMax, probeMin, verbose);
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
         }
-        this.solLen = maxDepth + 1;
-        this.probe = 0;
-        this.probeMax = probeMax;
-        this.probeMin = Math.min(probeMin, probeMax);
-        this.verbose = verbose;
-        this.solution = null;
-        this.isRec = false;
-
-        CoordCube.init(false);
-        initSearch();
-
         return (verbose & OPTIMAL_SOLUTION) == 0 ? search() : searchopt();
     }
 
@@ -543,5 +533,22 @@ public class Search {
             }
         }
         return -1;
+    }
+
+    private void initializeSearchParameters(String facelets, int maxDepth, long probeMax, long probeMin, int verbose) {
+        int check = verify(facelets);
+        if (check != 0) {
+            throw new IllegalArgumentException("Error " + Math.abs(check));
+        }
+        this.solLen = maxDepth + 1;
+        this.probe = 0;
+        this.probeMax = probeMax;
+        this.probeMin = Math.min(probeMin, probeMax);
+        this.verbose = verbose;
+        this.solution = null;
+        this.isRec = false;
+
+        CoordCube.init(false);
+        initSearch();
     }
 }
