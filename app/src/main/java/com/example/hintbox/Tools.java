@@ -8,56 +8,55 @@ import java.util.Random;
 public class Tools {
     private static Random gen = new Random();
 
-    private static void read(char[] arr, DataInput in) throws IOException {
+    private static void readCharArray(char[] arr, DataInput in) throws IOException {
         for (int i = 0; i < arr.length; i++) {
             arr[i] = in.readChar();
         }
     }
 
-    private static void read(int[] arr, DataInput in) throws IOException {
+    private static void readIntArray(int[] arr, DataInput in) throws IOException {
         for (int i = 0; i < arr.length; i++) {
             arr[i] = in.readInt();
         }
     }
 
-    private static void read(char[][] arr, DataInput in) throws IOException {
+    private static void readChar2DArray(char[][] arr, DataInput in) throws IOException {
         for (int i = 0; i < arr.length; i++) {
-            read(arr[i], in);
+            readCharArray(arr[i], in);
         }
     }
 
-    private static void read(int[][] arr, DataInput in) throws IOException {
+    private static void readInt2DArray(int[][] arr, DataInput in) throws IOException {
         for (int i = 0; i < arr.length; i++) {
-            read(arr[i], in);
+            readIntArray(arr[i], in);
         }
     }
 
-    private static void write(char[] arr, DataOutput out) throws IOException {
+    private static void writeCharArray(char[] arr, DataOutput out) throws IOException {
         for (int i = 0; i < arr.length; i++) {
             out.writeChar(arr[i]);
         }
     }
 
-    private static void write(int[] arr, DataOutput out) throws IOException {
+    private static void writeIntArray(int[] arr, DataOutput out) throws IOException {
         for (int i = 0; i < arr.length; i++) {
             out.writeInt(arr[i]);
         }
     }
 
-    private static void write(char[][] arr, DataOutput out) throws IOException {
+    private static void writeChar2DArray(char[][] arr, DataOutput out) throws IOException {
         for (int i = 0; i < arr.length; i++) {
-            write(arr[i], out);
+            writeCharArray(arr[i], out);
         }
     }
 
-    private static void write(int[][] arr, DataOutput out) throws IOException {
+    private static void writeInt2DArray(int[][] arr, DataOutput out) throws IOException {
         for (int i = 0; i < arr.length; i++) {
-            write(arr[i], out);
+            writeIntArray(arr[i], out);
         }
     }
 
     protected Tools() {}
-
 
     public static void initFrom(DataInput in) throws IOException {
         if (Search.inited && CoordCube.initLevel == 2) {
@@ -66,78 +65,76 @@ public class Tools {
         CubieCube.initMove();
         CubieCube.initSym();
 
-        read(CubieCube.FlipS2R, in);
-        read(CubieCube.TwistS2R, in);
-        read(CubieCube.EPermS2R, in);
-        read(CubieCube.FlipR2S, in);
-        read(CubieCube.TwistR2S, in);
-        read(CubieCube.EPermR2S, in);
+        readIntArray(CubieCube.FlipS2R, in);
+        readIntArray(CubieCube.TwistS2R, in);
+        readIntArray(CubieCube.EPermS2R, in);
+        readIntArray(CubieCube.FlipR2S, in);
+        readIntArray(CubieCube.TwistR2S, in);
+        readIntArray(CubieCube.EPermR2S, in);
         in.readFully(CubieCube.Perm2CombP);
         in.readFully(CubieCube.MPermInv);
-        read(CubieCube.PermInvEdgeSym, in);
+        readIntArray(CubieCube.PermInvEdgeSym, in);
 
-        read(CoordCube.UDSliceMove, in);
-        read(CoordCube.TwistMove, in);
-        read(CoordCube.FlipMove, in);
-        read(CoordCube.UDSliceConj, in);
-        read(CoordCube.UDSliceTwistPrun, in);
-        read(CoordCube.UDSliceFlipPrun, in);
-        read(CoordCube.CPermMove, in);
-        read(CoordCube.EPermMove, in);
-        read(CoordCube.MPermMove, in);
-        read(CoordCube.MPermConj, in);
-        read(CoordCube.CCombPConj, in);
-        read(CoordCube.MCPermPrun, in);
-        read(CoordCube.EPermCCombPPrun, in);
+        readInt2DArray(CoordCube.UDSliceMove, in);
+        readInt2DArray(CoordCube.TwistMove, in);
+        readInt2DArray(CoordCube.FlipMove, in);
+        readInt2DArray(CoordCube.UDSliceConj, in);
+        readInt2DArray(CoordCube.UDSliceTwistPrun, in);
+        readInt2DArray(CoordCube.UDSliceFlipPrun, in);
+        readInt2DArray(CoordCube.CPermMove, in);
+        readInt2DArray(CoordCube.EPermMove, in);
+        readInt2DArray(CoordCube.MPermMove, in);
+        readInt2DArray(CoordCube.MPermConj, in);
+        readInt2DArray(CoordCube.CCombPConj, in);
+        readInt2DArray(CoordCube.MCPermPrun, in);
+        readInt2DArray(CoordCube.EPermCCombPPrun, in);
 
         if (Search.USE_TWIST_FLIP_PRUN) {
-            read(CubieCube.FlipS2RF, in);
-            read(CoordCube.TwistFlipPrun, in);
+            readIntArray(CubieCube.FlipS2RF, in);
+            readInt2DArray(CoordCube.TwistFlipPrun, in);
         }
         Search.inited = true;
         CoordCube.initLevel = 2;
     }
 
-
     public static void saveTo(DataOutput out) throws IOException {
         Search.init();
         while (CoordCube.initLevel != 2) {
             CoordCube.init(true);
-        }                                         //   w/o TFP    w/ TFP
-        write(CubieCube.FlipS2R, out);            //       672
-        write(CubieCube.TwistS2R, out);           //       648
-        write(CubieCube.EPermS2R, out);           //     5,536
-        write(CubieCube.FlipR2S, out);             //     3,072
-        write(CubieCube.TwistR2S, out);            //     3,281
-        write(CubieCube.EPermR2S, out);            //    20,160
-        out.write(CubieCube.Perm2CombP);          //     2,768
+        }
+        writeIntArray(CubieCube.FlipS2R, out);
+        writeIntArray(CubieCube.TwistS2R, out);
+        writeIntArray(CubieCube.EPermS2R, out);
+        writeIntArray(CubieCube.FlipR2S, out);
+        writeIntArray(CubieCube.TwistR2S, out);
+        writeIntArray(CubieCube.EPermR2S, out);
+        out.write(CubieCube.Perm2CombP);
         out.write(CubieCube.MPermInv);
-        write(CubieCube.PermInvEdgeSym, out);     //     5,536
+        writeIntArray(CubieCube.PermInvEdgeSym, out);
 
-        write(CoordCube.UDSliceMove, out);        //    17,820
-        write(CoordCube.TwistMove, out);          //    11,664
-        write(CoordCube.FlipMove, out);           //    12,096
-        write(CoordCube.UDSliceConj, out);        //     7,920
-        write(CoordCube.UDSliceTwistPrun, out);   //    80,192
-        write(CoordCube.UDSliceFlipPrun, out);    //    83,164
-        write(CoordCube.CPermMove, out);          //    55,360
-        write(CoordCube.EPermMove, out);          //    55,360
-        write(CoordCube.MPermMove, out);          //       480
-        write(CoordCube.MPermConj, out);          //       768
-        write(CoordCube.CCombPConj, out);         //     2,240 +   2,240
-        write(CoordCube.MCPermPrun, out);         //    33,220
-        write(CoordCube.EPermCCombPPrun, out);    //    96,884 +  96,880
+        writeInt2DArray(CoordCube.UDSliceMove, out);
+        writeInt2DArray(CoordCube.TwistMove, out);
+        writeInt2DArray(CoordCube.FlipMove, out);
+        writeInt2DArray(CoordCube.UDSliceConj, out);
+        writeInt2DArray(CoordCube.UDSliceTwistPrun, out);
+        writeInt2DArray(CoordCube.UDSliceFlipPrun, out);
+        writeInt2DArray(CoordCube.CPermMove, out);
+        writeInt2DArray(CoordCube.EPermMove, out);
+        writeInt2DArray(CoordCube.MPermMove, out);
+        writeInt2DArray(CoordCube.MPermConj, out);
+        writeInt2DArray(CoordCube.CCombPConj, out);
+        writeInt2DArray(CoordCube.MCPermPrun, out);
+        writeInt2DArray(CoordCube.EPermCCombPPrun, out);
 
         if (Search.USE_TWIST_FLIP_PRUN) {
-            write(CubieCube.FlipS2RF, out);       //           +   5,376
-            write(CoordCube.TwistFlipPrun, out);  //           + 331,780
-        }                                         // = 498,841 + 436,276 = 935,117
+            writeIntArray(CubieCube.FlipS2RF, out);
+            writeInt2DArray(CoordCube.TwistFlipPrun, out);
+        }
     }
 
     public static void setRandomSource(Random gen) {
         Tools.gen = gen;
     }
-
 
     public static String randomCube() {
         return randomState(STATE_RANDOM, STATE_RANDOM, STATE_RANDOM, STATE_RANDOM, gen);
@@ -283,7 +280,6 @@ public class Tools {
                         eo == STATE_RANDOM ? gen.nextInt(2048) : (eo == STATE_SOLVED ? 0 : resolveOri(eo, 2))));
     }
 
-
     public static String randomLastLayer() {
         return randomState(
                 new byte[] { -1, -1, -1, -1, 4, 5, 6, 7},
@@ -352,7 +348,6 @@ public class Tools {
         return Util.toFaceCube(new CubieCube(0, 0, 0, 2047));
     }
 
-
     public static String fromScramble(int[] scramble) {
         CubieCube c1 = new CubieCube();
         CubieCube c2 = new CubieCube();
@@ -408,7 +403,6 @@ public class Tools {
         }
         return fromScramble(ret);
     }
-
 
     public static int verify(String facelets) {
         return new Search().verify(facelets);
