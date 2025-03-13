@@ -2,20 +2,23 @@ package com.example.hintbox;
 
 import org.opencv.core.Scalar;
 
+// Class representing a color in the HSV color space
 public class ColorHSV {
-    private String name;
-    private int lowH, hightH, lowS, hightS, lowV, hightV;
+    private String name; // Name of the color
+    private int lowH, highH, lowS, highS, lowV, highV; // HSV range values
 
+    // Constructor to initialize the color with its name and HSV range
     ColorHSV(String n, int lH, int hH, int lS, int hS, int lV, int hV){
         this.name = n;
         this.lowH = lH;
-        this.hightH = hH;
+        this.highH = hH;
         this.lowS = lS;
-        this.hightS = hS;
+        this.highS = hS;
         this.lowV = lV;
-        this.hightV = hV;
+        this.highV = hV;
     }
 
+    // Getter and setter for the color name
     public String getName () {
         return name;
     }
@@ -24,6 +27,7 @@ public class ColorHSV {
         this.name = name;
     }
 
+    // Getter and setter for low and high H values
     public int getLowH() {
         return lowH;
     }
@@ -32,14 +36,15 @@ public class ColorHSV {
         this.lowH = lowH;
     }
 
-    public int getHightH() {
-        return hightH;
+    public int getHighH() {
+        return highH;
     }
 
-    public void setHightH(int hightH) {
-        this.hightH = hightH;
+    public void setHighH(int highH) {
+        this.highH = highH;
     }
 
+    // Getter and setter for low and high S values
     public int getLowS() {
         return lowS;
     }
@@ -48,14 +53,15 @@ public class ColorHSV {
         this.lowS = lowS;
     }
 
-    public int getHightS() {
-        return hightS;
+    public int getHighS() {
+        return highS;
     }
 
-    public void setHightS(int hightS) {
-        this.hightS = hightS;
+    public void setHighS(int highS) {
+        this.highS = highS;
     }
 
+    // Getter and setter for low and high V values
     public int getLowV() {
         return lowV;
     }
@@ -64,19 +70,24 @@ public class ColorHSV {
         this.lowV = lowV;
     }
 
-    public int getHightV() {
-        return hightV;
+    public int getHighV() {
+        return highV;
     }
 
-    public void setHightV(int hightV) {
-        this.hightV = hightV;
+    public void setHighV(int highV) {
+        this.highV = highV;
     }
 
+    // Returns a string representation of the color
     public String toString() {
-        return "Color: " + name + " lowH: " + lowH + " hightH: " + hightH + " lowS: " + lowS + " hightS: " + hightS + " lowV: " + lowV + " hightV: " + hightV;
+        return "Color: " + name + " lowH: " + lowH + " highH: " + highH + " lowS: " + lowS + " highS: " + highS + " lowV: " + lowV + " highV: " + highV;
     }
 
+    /**
+     * Returns a Scalar object representing the color in HSV format.
+     * The Scalar is constructed using the high values of H, S, and V.
+     */
     public Scalar getColor() {
-        return new Scalar(hightH, hightS, hightV);
+        return new Scalar(highH, highS, highV);
     }
 }
