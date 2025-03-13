@@ -1,71 +1,84 @@
 package com.example.hintbox;
 
-public class Cuber {
-    public int x, y, w, h;
-    public String color;
+// This class represents a graphical object with position, size, and color attributes.
+public class GraphicObject {
+    // Position of the object on the x-axis
+    private int xPosition;
+    // Position of the object on the y-axis
+    private int yPosition;
+    // Width of the object
+    private int width;
+    // Height of the object
+    private int height;
+    // Color of the object
+    private String color;
 
-    Cuber (int x_, int y_, int w_, int h_, String c) {
-        this.x = x_;
-        this.y = y_;
-        this.w = w_;
-        this.h = h_;
-        this.color = c;
+    // Constructor to initialize the graphical object with position, size, and color
+    public GraphicObject(int xPosition, int yPosition, int width, int height, String color) {
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+        this.width = width;
+        this.height = height;
+        this.color = color;
     }
 
-    public int getY() {
-        return y;
+    // Getter for yPosition
+    public int getYPosition() {
+        return yPosition;
     }
 
-    public int getX() {
-        return x;
+    // Getter for xPosition
+    public int getXPosition() {
+        return xPosition;
     }
 
+    // Getter for color
     public String getColor() {
         return color;
     }
 
-    public int getH() {
-        return h;
+    // Getter for height
+    public int getHeight() {
+        return height;
     }
 
-    public int getW() {
-        return w;
+    // Getter for width
+    public int getWidth() {
+        return width;
     }
 
-    public void setY(int y) {
-        this.y = y;
+    // Setter for yPosition
+    public void setYPosition(int yPosition) {
+        this.yPosition = yPosition;
     }
 
-    public void setX(int x) {
-        this.x = x;
+    // Setter for xPosition
+    public void setXPosition(int xPosition) {
+        this.xPosition = xPosition;
     }
 
+    // Setter for color
     public void setColor(String color) {
         this.color = color;
     }
 
-    public void setH(int h) {
-        this.h = h;
+    // Setter for height
+    public void setHeight(int height) {
+        this.height = height;
     }
 
-    public void setW(int w) {
-        this.w = w;
+    // Setter for width
+    public void setWidth(int width) {
+        this.width = width;
     }
 
-    public int compareToX(int xC) {
-        if (xC > this.x) {
-            return xC;
-        } else {
-            return this.x;
-        }
+    // Compares the given xPosition with the object's xPosition and returns the maximum
+    public int compareToXPosition(int xPosition) {
+        return Math.max(xPosition, this.xPosition);
     }
 
-    public int compareToY(int yC) {
-        if (yC > this.y) {
-            return yC;
-        } else {
-            return this.y;
-        }
+    // Compares the given yPosition with the object's yPosition and returns the maximum
+    public int compareToYPosition(int yPosition) {
+        return Math.max(yPosition, this.yPosition);
     }
-
 }
