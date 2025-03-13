@@ -10,12 +10,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.HorizontalScrollView;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -36,48 +33,43 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.FormatFlagsConversionMismatchException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+/**
+ * Основная активность приложения для обработки изображений куба.
+ * Реализует просчет контуров и сбор данных для последующего решения кубика.
+ */
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final String TAG = "OCVSample::Activity";
     private CameraBridgeViewBase mOpenCvCameraView;
     private Mat mFrame;
 
+    // Параметры HSV для каждого цвета
     private ColorHSV yellowHsv, orangeHsv, greenHsv, blueHsv, whiteHsv, redHsv;
-    private Cuber[] temp, front, back, left, right, up, down, clear;
-    private Button print;
-    private String globalSide = "";
-    private Boolean consrolFront, consrolBack, consrolLeft, consrolRight, consrolUp, consrolDown;
-    private Button  button1, button2, button3, button4, button5, button6, button7, button8, button9;
+
+    // Временное хранение данных для текущей стороны куба
+    private Cuber[] temp = new Cuber[9];
+
+    // Кнопки для отображения цветов отдельных элементов
+    private Button button1, button2, button3, button4, button5, button6, button7, button8, button9;
+    private TextView sideView;
     private FloatingActionButton save;
-    private TextView side;
-    private Button sideView;
-    private String pointer = "";
 
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    Log.i(TAG, "OpenCV loaded successfully");
-                    mOpenCvCameraView.enableView();
-                } break;
-                default: {
-                    super.onManagerConnected(status);
-                } break;
-            }
-        }
-    };
+    // Указатель для анимации
+    private volatile String pointer = "";
 
-    public void MainActivity_show_camera() {
-        Log.i(TAG, "Instantiated new " + this.getClass());
-    }
+    // Используем перечисление для текущей стороны куба
+    private CubeSide currentSide = CubeSide.FRONT;
+
+    // Хранение данных для каждой стороны куба
+    private Map<CubeSide, CubeFace> cubeFaces = new HashMap<>();
+
+    // Колбэк для загрузки OpenCV
+    private OpenCVLoaderCallback mLoaderCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
 
+        // Загрузка настроек HSV для каждого цвета
         yellowHsv = setSettingHSV("Y", "yellow");
         greenHsv = setSettingHSV("G", "green");
         orangeHsv = setSettingHSV("O", "orange");
@@ -96,539 +89,382 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         redHsv = setSettingHSV("R", "red");
         blueHsv = setSettingHSV("B", "blue");
 
-        temp = new Cuber[9];
-        clear = new Cuber[9];
-
-        for (int i = 0; i < 9; i++){
-            Cuber c = new Cuber(1, 1, 1, 1, "c");
-            clear[i] = c;
+        // Инициализация временного массива (temp) и установка дефолтных значений для каждой ячейки
+        for (int i = 0; i < 9; i++) {
+            temp[i] = new Cuber(1, 1, 1, 1, "c");
         }
 
-        if (globalSide == "")
-            globalSide = "front";
+        // Инициализация хранения данных для сторон куба
+        for (CubeSide side : CubeSide.values()) {
+            cubeFaces.put(side, new CubeFace());
+        }
 
-        consrolFront = false;
-        consrolBack = false;
-        consrolDown = false;
-        consrolUp = false;
-        consrolLeft = false;
-        consrolRight = false;
-
-        front = new Cuber[9];
-        left = new Cuber[9];
-        back = new Cuber[9];
-        right = new Cuber[9];
-        up = new Cuber[9];
-        down = new Cuber[9];
-
-        button1 = (Button) findViewById(R.id.button1);
-        button2 = (Button) findViewById(R.id.button2);
-        button3 = (Button) findViewById(R.id.button3);
-        button4 = (Button) findViewById(R.id.button4);
-        button5 = (Button) findViewById(R.id.button5);
-        button6 = (Button) findViewById(R.id.button6);
-        button7 = (Button) findViewById(R.id.button7);
-        button8 = (Button) findViewById(R.id.button8);
-        button9 = (Button) findViewById(R.id.button9);
-
-        BottomNavigationView bottomNavigationView = findViewById(R.id.detection_nav);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                switch (id) {
-                    case R.id.prev:
-                        switch (globalSide){
-                            case "front":
-                                globalSide = "down";
-                                sideView.setText("down");
-                                if (consrolDown)
-                                    setStaticButton(down);
-                                break;
-                            case "down":
-                                globalSide = "up";
-                                sideView.setText("up");
-                                if (consrolUp)
-                                    setStaticButton(up);
-                                break;
-                            case "up":
-                                globalSide = "left";
-                                sideView.setText("left");
-                                if (consrolLeft)
-                                    setStaticButton(left);
-                                break;
-                            case "left":
-                                globalSide = "back";
-                                sideView.setText("back");
-                                if (consrolBack)
-                                    setStaticButton(back);
-                                break;
-                            case "back":
-                                globalSide = "right";
-                                sideView.setText("right");
-                                if (consrolRight)
-                                    setStaticButton(right);
-                                break;
-                            case "right":
-                                globalSide = "front";
-                                sideView.setText("front");
-                                if (consrolFront)
-                                    setStaticButton(front);
-                                break;
-                        }
-                        return true;
-                    case R.id.start:
-                        startActivity(new Intent(getApplicationContext(), SettingCube.class));
-                        overridePendingTransition(0,0);
-                        return true;
-//                        String cube = "";
-//                        String u, r, f, d, l, b;
-//                            u = up[4].getColor();
-//                            r = right[4].getColor();
-//                            f = front[4].getColor();
-//                            d = down[4].getColor();
-//                            l = left[4].getColor();
-//                            b = back[4].getColor();
-//
-//                            for (Cuber cuber : up) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : right) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : front) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : down) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : left) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                            for (Cuber cuber : back) {
-//                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-//                            }
-//                        cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
-//                        Intent intent = new Intent(getApplicationContext(), Solver.class);
-//                        intent.putExtra("cube", cube);
-//                        startActivity(intent);
-//                        overridePendingTransition(0,0);
-//                        return true;
-                    case R.id.clear:
-                        switch (globalSide){
-                            case "front":
-                                consrolFront = false;
-                                front = new Cuber[9];
-                                break;
-                            case "left":
-                                consrolLeft = false;
-                                left = new Cuber[9];
-                                break;
-                            case "back":
-                                consrolBack = false;
-                                back = new Cuber[9];
-                                break;
-                            case "right":
-                                consrolRight = false;
-                                right = new Cuber[9];
-                                break;
-                            case "up":
-                                consrolUp = false;
-                                up = new Cuber[9];
-                                break;
-                            case "down":
-                                consrolDown = false;
-                                down = new Cuber[9];
-                                break;
-                        }
-                        return true;
-                    case R.id.next:
-                        switch (globalSide){
-                            case "front":
-                                globalSide = "right";
-                                sideView.setText("right");
-                                if (consrolRight)
-                                    setStaticButton(right);
-                                break;
-                            case "right":
-                                globalSide = "back";
-                                sideView.setText("back");
-                                if (consrolBack)
-                                    setStaticButton(back);
-                                break;
-                            case "back":
-                                globalSide = "left";
-                                sideView.setText("left");
-                                if (consrolLeft)
-                                    setStaticButton(left);
-                                break;
-                            case "left":
-                                globalSide = "up";
-                                sideView.setText("up");
-                                if (consrolUp)
-                                    setStaticButton(up);
-                                break;
-                            case "up":
-                                globalSide = "down";
-                                sideView.setText("down");
-                                if (consrolDown)
-                                    setStaticButton(down);
-                                break;
-                            case "down":
-                                globalSide = "front";
-                                sideView.setText("front");
-                                if (consrolFront)
-                                    setStaticButton(front);
-                                break;
-                        }
-                        return true;
-                }
-                return false;
-            }
-        });
+        // Инициализация кнопок для отображения цветов
+        button1 = findViewById(R.id.button1);
+        button2 = findViewById(R.id.button2);
+        button3 = findViewById(R.id.button3);
+        button4 = findViewById(R.id.button4);
+        button5 = findViewById(R.id.button5);
+        button6 = findViewById(R.id.button6);
+        button7 = findViewById(R.id.button7);
+        button8 = findViewById(R.id.button8);
+        button9 = findViewById(R.id.button9);
 
         sideView = findViewById(R.id.sideView);
+        sideView.setText(currentSide.getDisplayName());
 
+        // Настройка нижней навигации
+        BottomNavigationView bottomNavigationView = findViewById(R.id.detection_nav);
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> handleNavigation(item.getItemId()));
+
+        // Обработка нажатия на кнопку сохранения текущей стороны
         save = findViewById(R.id.fab);
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (globalSide){
-                    case "front":
-                        consrolFront = true;
-                        front = temp;
-                        temp = new Cuber[9];
-                        globalSide = "right";
-                        sideView.setText("right");
-                        Log.d("front", String.valueOf(consrolFront));
+        save.setOnClickListener(v -> handleSaveCurrentSide());
 
-                        if (consrolRight) {
-                            setStaticButton(right);
-                        } else {
-                            setStaticButton(clear);
+        mLoaderCallback = new OpenCVLoaderCallback(this, mOpenCvCameraView);
+    }
+
+    /**
+     * Обработка выбора пункта навигации.
+     *
+     * @param itemId идентификатор выбранного пункта
+     * @return true, если событие обработано
+     */
+    private boolean handleNavigation(int itemId) {
+        switch (itemId) {
+            case R.id.prev:
+                changeSide(getPreviousSide());
+                break;
+            case R.id.next:
+                changeSide(getNextSide());
+                break;
+            case R.id.clear:
+                clearCurrentSide();
+                break;
+            case R.id.start:
+                startActivity(new Intent(getApplicationContext(), SettingCube.class));
+                overridePendingTransition(0, 0);
+                break;
+            default:
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Меняет текущую сторону на указанную.
+     *
+     * @param newSide новая сторона куба
+     */
+    private void changeSide(CubeSide newSide) {
+        currentSide = newSide;
+        sideView.setText(currentSide.getDisplayName());
+        if (cubeFaces.get(currentSide).controlled) {
+            setStaticButton(cubeFaces.get(currentSide).cubers);
+        } else {
+            setStaticButton(getClearCube());
+        }
+    }
+
+    /**
+     * Возвращает предыдущую сторону относительно текущей.
+     */
+    private CubeSide getPreviousSide() {
+        return currentSide.getPrevious();
+    }
+
+    /**
+     * Возвращает следующую сторону относительно текущей.
+     */
+    private CubeSide getNextSide() {
+        return currentSide.getNext();
+    }
+
+    /**
+     * Очищает данные для текущей стороны.
+     */
+    private void clearCurrentSide() {
+        CubeFace face = cubeFaces.get(currentSide);
+        face.controlled = false;
+        face.cubers = new Cuber[9];
+    }
+
+    /**
+     * Обработка сохранения данных текущей стороны и переход к следующей.
+     * Если все стороны заполнены, производится построение строки куба и запуск активности-решателя.
+     */
+    private void handleSaveCurrentSide() {
+        CubeFace currentFace = cubeFaces.get(currentSide);
+        currentFace.controlled = true;
+        currentFace.cubers = temp;
+        temp = new Cuber[9];
+        if (currentSide == CubeSide.FRONT || currentSide == CubeSide.RIGHT || currentSide == CubeSide.BACK) {
+            animatePointer(new String[]{"R", ""}, new long[]{1000, 0});
+        } else if (currentSide == CubeSide.LEFT) {
+            animatePointer(new String[]{"R", "", "U", ""}, new long[]{1000, 500, 1000, 0});
+        } else if (currentSide == CubeSide.UP) {
+            animatePointer(new String[]{"D", "", "D", ""}, new long[]{1000, 500, 1000, 0});
+        }
+        CubeSide nextSide = getNextSide();
+        changeSide(nextSide);
+
+        if (allFacesControlled()) {
+            String cube = buildCubeString();
+            Intent intent = new Intent(getApplicationContext(), Solver.class);
+            intent.putExtra("cube", cube);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+        }
+    }
+
+    /**
+     * Проверяет, заполнены ли данные для всех сторон куба.
+     */
+    private boolean allFacesControlled() {
+        for (CubeSide side : CubeSide.values()) {
+            if (!cubeFaces.get(side).controlled) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Собирает строку, описывающую состояние куба.
+     * Порядок: Up, Right, Front, Down, Left, Back.
+     */
+    private String buildCubeString() {
+        StringBuilder cube = new StringBuilder();
+        // Получаем центральные цвета для определения преобразования цвета
+        String u = cubeFaces.get(CubeSide.UP).cubers[4].getColor();
+        String r = cubeFaces.get(CubeSide.RIGHT).cubers[4].getColor();
+        String f = cubeFaces.get(CubeSide.FRONT).cubers[4].getColor();
+        String d = cubeFaces.get(CubeSide.DOWN).cubers[4].getColor();
+        String l = cubeFaces.get(CubeSide.LEFT).cubers[4].getColor();
+        String b = cubeFaces.get(CubeSide.BACK).cubers[4].getColor();
+
+        // Добавляем стороны в определённом порядке
+        cube.append(convertFace(cubeFaces.get(CubeSide.UP).cubers, u, r, f, d, l, b));
+        cube.append(convertFace(cubeFaces.get(CubeSide.RIGHT).cubers, u, r, f, d, l, b));
+        cube.append(convertFace(cubeFaces.get(CubeSide.FRONT).cubers, u, r, f, d, l, b));
+        cube.append(convertFace(cubeFaces.get(CubeSide.DOWN).cubers, u, r, f, d, l, b));
+        cube.append(convertFace(cubeFaces.get(CubeSide.LEFT).cubers, u, r, f, d, l, b));
+        cube.append(convertFace(cubeFaces.get(CubeSide.BACK).cubers, u, r, f, d, l, b));
+        return cube.toString();
+    }
+
+    /**
+     * Преобразует данные для одной грани куба в строку с обозначениями цветов.
+     */
+    private String convertFace(Cuber[] face, String u, String r, String f, String d, String l, String b) {
+        StringBuilder faceStr = new StringBuilder();
+        for (Cuber cuber : face) {
+            faceStr.append(colorConvectore(u, r, f, d, l, b, cuber.getColor()));
+        }
+        return faceStr.toString();
+    }
+
+    /**
+     * Устанавливает цвет для набора кнопок на основе переданного массива куберов.
+     */
+    public void setStaticButton(Cuber[] cubers) {
+        // Массив кнопок для упрощения обхода
+        Button[] buttons = new Button[]{button1, button2, button3, button4, button5, button6, button7, button8, button9};
+        for (int i = 0; i < buttons.length; i++) {
+            paintButton(buttons[i], cubers[i].getColor());
+        }
+    }
+
+    /**
+     * Получает массив «очищенных» куберов (с дефолтными значениями).
+     */
+    private Cuber[] getClearCube() {
+        Cuber[] clear = new Cuber[9];
+        for (int i = 0; i < 9; i++) {
+            clear[i] = new Cuber(1, 1, 1, 1, "c");
+        }
+        return clear;
+    }
+
+    /**
+     * Преобразует цвет из настроек в обозначение для кубика.
+     */
+    public String colorConvectore(String u_, String r_, String f_, String d_, String l_, String b_, String cube) {
+        if (cube.equals(u_)) return "U";
+        if (cube.equals(r_)) return "R";
+        if (cube.equals(f_)) return "F";
+        if (cube.equals(d_)) return "D";
+        if (cube.equals(l_)) return "L";
+        if (cube.equals(b_)) return "B";
+        return "";
+    }
+
+    /**
+     * Окрашивает кнопку в заданный цвет, определяемый именем цвета.
+     */
+    private Button paintButton(Button button, String colorName) {
+        int colorResId = getColorResourceId(colorName);
+        button.setBackgroundColor(getResources().getColor(colorResId));
+        return button;
+    }
+
+    /**
+     * Возвращает идентификатор ресурса цвета для заданного имени.
+     */
+    private int getColorResourceId(String colorName) {
+        if ("yellow".equals(colorName)) return R.color.yellow;
+        else if ("green".equals(colorName)) return R.color.green;
+        else if ("white".equals(colorName)) return R.color.white;
+        else if ("blue".equals(colorName)) return R.color.blue;
+        else if ("orange".equals(colorName)) return R.color.orange;
+        else if ("red".equals(colorName)) return R.color.red;
+        return R.color.black;
+    }
+
+    /**
+     * Загружает настройки HSV для указанного цвета.
+     */
+    public ColorHSV setSettingHSV(String color, String name) {
+        SharedPreferences setting = getApplicationContext().getSharedPreferences("ColorSetting", 0);
+        return new ColorHSV(name,
+                setting.getInt(color + "Hl", 0),
+                setting.getInt(color + "Hh", 0),
+                setting.getInt(color + "Sl", 0),
+                setting.getInt(color + "Sh", 0),
+                setting.getInt(color + "Vl", 0),
+                setting.getInt(color + "Vh", 0));
+    }
+
+    /**
+     * Ищет контуры куба для указанного диапазона HSV и обрабатывает найденные области.
+     *
+     * @param mMat   исходное изображение
+     * @param color  диапазон HSV
+     * @param control флаг, указывающий, нужно ли обновлять кнопки
+     * @return список найденных контуров
+     */
+    public List<MatOfPoint> findCubeContours(Mat mMat, ColorHSV color, boolean control) {
+        List<MatOfPoint> allContours = new ArrayList<>();
+        List<MatOfPoint> validContours = new ArrayList<>();
+        Mat mInRange = new Mat();
+
+        Scalar lowScalar = new Scalar(color.getLowH(), color.getLowS(), color.getLowV());
+        Scalar highScalar = new Scalar(color.getHightH(), color.getHightS(), color.getHightV());
+
+        Imgproc.cvtColor(mMat, mInRange, Imgproc.COLOR_BGR2HSV_FULL);
+        Core.inRange(mInRange, lowScalar, highScalar, mInRange);
+        Imgproc.GaussianBlur(mInRange, mInRange, new Size(5, 5), 0);
+        Imgproc.findContours(mInRange, allContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_NONE, new Point(0, 0));
+        mInRange.release();
+
+        // Определение областей по координатам для 9 кнопок (индекс, диапазоны x и y)
+        Region[] regions = new Region[]{
+            new Region(0, 150, 0, 120, button1, 0),
+            new Region(180, 330, 0, 120, button2, 1),
+            new Region(380, 540, 0, 120, button3, 2),
+            new Region(0, 150, 200, 350, button4, 3),
+            new Region(180, 330, 200, 350, button5, 4),
+            new Region(380, 540, 200, 350, button6, 5),
+            new Region(0, 150, 370, 540, button7, 6),
+            new Region(180, 330, 370, 540, button8, 7),
+            new Region(380, 540, 370, 540, button9, 8)
+        };
+
+        // Перебор контуров и проверка попадания в заданные области
+        for (MatOfPoint contour : allContours) {
+            double area = Imgproc.contourArea(contour);
+            if (area > 15000 && area < 30000) {
+                validContours.add(contour);
+                Rect rect = Imgproc.boundingRect(contour);
+                int x = rect.x, y = rect.y;
+                for (Region region : regions) {
+                    if (region.contains(x, y)) {
+                        saveResultColor(rect.x, rect.y, rect.width, rect.height, color.getName(), currentSide.getDisplayName(), region.index);
+                        if (!control) {
+                            paintButton(region.button, color.getName());
                         }
-
-                        pointer = "R";
-                        Runnable runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable1 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "";
-                                    }
-                                };
-                                Thread thr = new Thread(runnable1);
-                                try {
-                                    thr.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr.start();
-                            }
-                        };
-                        Thread thread = new Thread(runnable);
-                        thread.start();
-                        break;
-                    case "right":
-                        consrolRight = true;
-                        right = temp;
-                        temp = new Cuber[9];
-                        globalSide = "back";
-                        sideView.setText("back");
-                        Log.d("front", String.valueOf(consrolRight));
-
-                        if (consrolBack) {
-                            setStaticButton(back);
-                        } else {
-                            setStaticButton(clear);
-                        }
-
-                        pointer = "R";
-                        runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable1 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "";
-                                    }
-                                };
-                                Thread thr = new Thread(runnable1);
-                                try {
-                                    thr.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr.start();
-                            }
-                        };
-                        thread = new Thread(runnable);
-                        thread.start();
-                        break;
-                    case "back":
-                        consrolBack = true;
-                        back = temp;
-                        temp = new Cuber[9];
-                        globalSide = "left";
-                        sideView.setText("left");
-                        Log.d("front", String.valueOf(consrolBack));
-
-                        if (consrolLeft) {
-                            setStaticButton(left);
-                        } else {
-                            setStaticButton(clear);
-                        }
-
-                        pointer = "R";
-                        runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable1 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "";
-                                    }
-                                };
-                                Thread thr = new Thread(runnable1);
-                                try {
-                                    thr.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr.start();
-                            }
-                        };
-                        thread = new Thread(runnable);
-                        thread.start();
-                        break;
-                    case "left":
-                        consrolLeft = true;
-                        left = temp;
-                        temp = new Cuber[9];
-                        globalSide = "up";
-                        sideView.setText("up");
-                        Log.d("front", String.valueOf(consrolLeft));
-
-                        if (consrolUp) {
-                            setStaticButton(up);
-                        } else {
-                            setStaticButton(clear);
-                        }
-
-                        pointer = "R";
-                        runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable1 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "";
-                                    }
-                                };
-                                Thread thr = new Thread(runnable1);
-                                try {
-                                    thr.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr.start();
-                            }
-                        };
-                        thread = new Thread(runnable);
-                        thread.start();
-
-                        Runnable runnable2 = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable3 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "U";
-                                    }
-                                };
-                                Thread thr1 = new Thread(runnable3);
-                                try {
-                                    thr1.sleep(1500);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr1.start();
-                            }
-                        };
-                        thread = new Thread(runnable2);
-                        thread.start();
-
-                        Runnable runnable3 = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable4 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "";
-                                    }
-                                };
-                                Thread thr1 = new Thread(runnable4);
-                                try {
-                                    thr1.sleep(2500);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr1.start();
-                            }
-                        };
-                        thread = new Thread(runnable3);
-                        thread.start();
-                        break;
-                    case "up":
-                        consrolUp = true;
-                        up = temp;
-                        temp = new Cuber[9];
-                        globalSide = "down";
-                        sideView.setText("down");
-                        Log.d("front", String.valueOf(consrolUp));
-
-                        if (consrolDown) {
-                            setStaticButton(down);
-                        } else {
-                            setStaticButton(clear);
-                        }
-
-                        pointer = "D";
-                        runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable1 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "";
-                                    }
-                                };
-                                Thread thr = new Thread(runnable1);
-                                try {
-                                    thr.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr.start();
-                            }
-                        };
-                        thread = new Thread(runnable);
-                        thread.start();
-
-                        runnable2 = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable3 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "D";
-                                    }
-                                };
-                                Thread thr1 = new Thread(runnable3);
-                                try {
-                                    thr1.sleep(1500);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr1.start();
-                            }
-                        };
-                        thread = new Thread(runnable2);
-                        thread.start();
-
-                        runnable3 = new Runnable() {
-                            @Override
-                            public void run() {
-                                Runnable runnable4 = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pointer = "";
-                                    }
-                                };
-                                Thread thr1 = new Thread(runnable4);
-                                try {
-                                    thr1.sleep(2500);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                thr1.start();
-                            }
-                        };
-                        thread = new Thread(runnable3);
-                        thread.start();
-                        break;
-                    case "down":
-                        consrolDown = true;
-                        down = temp;
-                        temp = new Cuber[9];
-                        globalSide = "front";
-                        sideView.setText("front");
-
-                        if (consrolFront && consrolRight && consrolBack && consrolLeft && consrolUp && consrolDown) {
-                            String cube = "";
-                            String u, r, f, d, l, b;
-
-                            u = up[4].getColor();
-                            r = right[4].getColor();
-                            f = front[4].getColor();
-                            d = down[4].getColor();
-                            l = left[4].getColor();
-                            b = back[4].getColor();
-
-                            for (Cuber cuber : up) {
-                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                            }
-                            for (Cuber cuber : right) {
-                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                            }
-                            for (Cuber cuber : front) {
-                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                            }
-                            for (Cuber cuber : down) {
-                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                            }
-                            for (Cuber cuber : left) {
-                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                            }
-                            for (Cuber cuber : back) {
-                                cube = cube + colorConvectore(u, r, f, d, l, b, cuber.getColor());
-                            }
-
-//                            cube = "DRUUUDRBLBFLDRLDLFFDUFFRFRLRFBRDFUDLRBUBLURUDFBBUBLDLB";
-
-                            Intent intent = new Intent(getApplicationContext(), Solver.class);
-                            intent.putExtra("cube", cube);
-                            startActivity(intent);
-                            overridePendingTransition(0,0);
-                        }
-                        break;
+                    }
                 }
             }
-        });
+        }
+        return validContours;
     }
 
-    public String colorConvectore (String u_, String r_, String f_, String d_, String l_, String b_, String cube) {
-       if (cube == u_) {return "U";}
-       if (cube == r_) {return "R";}
-       if (cube == f_) {return "F";}
-       if (cube == d_) {return "D";}
-       if (cube == l_) {return "L";}
-       if (cube == b_) {return "B";}
-       return "";
+    /**
+     * Сохраняет данные для отдельного элемента куба во временный массив.
+     */
+    public void saveResultColor(int x_, int y_, int w_, int h_, String color, String side, int index) {
+        Cuber item = new Cuber(x_, y_, w_, h_, color);
+        temp[index] = item;
     }
 
-    public void setStaticButton (Cuber[] cubers) {
-        paintButton(button1, cubers[0].getColor());
-        paintButton(button2, cubers[1].getColor());
-        paintButton(button3, cubers[2].getColor());
-        paintButton(button4, cubers[3].getColor());
-        paintButton(button5, cubers[4].getColor());
-        paintButton(button6, cubers[5].getColor());
-        paintButton(button7, cubers[6].getColor());
-        paintButton(button8, cubers[7].getColor());
-        paintButton(button9, cubers[8].getColor());
+    /**
+     * Отрисовывает контуры куба и, при необходимости, линии указателя.
+     */
+    public List<MatOfPoint> drawCubeContours(Mat mMat, ColorHSV colorHSV, Scalar colorLine) {
+        // Используем контрольную метку для текущей стороны
+        boolean controlFlag = cubeFaces.get(currentSide).controlled;
+        List<MatOfPoint> contours = findCubeContours(mMat, colorHSV, controlFlag);
+
+        // Отрисовка контуров или специальных линий в зависимости от значения указателя
+        if (pointer.isEmpty()) {
+            for (MatOfPoint cnt : contours) {
+                Rect rect = Imgproc.boundingRect(cnt);
+                Imgproc.rectangle(mMat, rect.tl(), rect.br(), colorLine, 5);
+            }
+        } else if (pointer.equals("R")) {
+            // Отрисовка линий для указателя "R"
+            drawHorizontalMarker(mMat, 120, 520, 200, 160, 240, colorLine);
+            drawHorizontalMarker(mMat, 120, 520, 400, 360, 440, colorLine);
+        } else if (pointer.equals("U")) {
+            // Отрисовка линий для указателя "U"
+            drawVerticalMarker(mMat, 200, 520, 200, 160, 240, colorLine);
+            drawVerticalMarker(mMat, 400, 520, 200, 360, 440, colorLine);
+        } else if (pointer.equals("D")) {
+            // Отрисовка линий для указателя "D"
+            drawVerticalMarker(mMat, 200, 520, 480, 160, 240, colorLine);
+            drawVerticalMarker(mMat, 400, 520, 480, 360, 440, colorLine);
+        }
+        return contours;
     }
+
+    /**
+     * Рисует горизонтальные линии-маркеры.
+     */
+    private void drawHorizontalMarker(Mat mMat, double startX, double endX, double y, double offset1, double offset2, Scalar colorLine) {
+        Point p1 = new Point(startX, y);
+        Point p2 = new Point(endX, y);
+        Point pHigh = new Point(endX - offset1, y - offset1);
+        Point pLow = new Point(endX - offset1, y + offset2);
+        Imgproc.line(mMat, p1, p2, colorLine, 5);
+        Imgproc.line(mMat, pHigh, p2, colorLine, 5);
+        Imgproc.line(mMat, pLow, p2, colorLine, 5);
+    }
+
+    /**
+     * Рисует вертикальные линии-маркеры.
+     */
+    private void drawVerticalMarker(Mat mMat, double x, double startY, double endY, double offset1, double offset2, Scalar colorLine) {
+        Point p1 = new Point(x, startY);
+        Point p2 = new Point(x, endY);
+        Point pHigh = new Point(x - offset1, startY + offset1);
+        Point pLow = new Point(x + offset2, startY + offset1);
+        Imgproc.line(mMat, p1, p2, colorLine, 5);
+        Imgproc.line(mMat, pHigh, p1, colorLine, 5);
+        Imgproc.line(mMat, pLow, p1, colorLine, 5);
+    }
+
+    /**
+     * Анимация указателя. Принимает последовательность значений указателя и соответствующие задержки.
+     *
+     * @param sequence массив значений указателя
+     * @param delays   задержки в миллисекундах для каждого шага
+     */
+    private void animatePointer(final String[] sequence, final long[] delays) {
+        new Thread(new PointerAnimator(this, sequence, delays)).start();
+    }
+
+    // Переопределённые методы жизненного цикла камеры OpenCV
 
     @Override
     public void onPause() {
@@ -649,6 +485,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (mOpenCvCameraView != null)
@@ -665,271 +502,18 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mFrame.release();
     }
 
-    public ColorHSV setSettingHSV (String color, String name) {
-        ColorHSV temp = null;
-        SharedPreferences setting = getApplicationContext().getSharedPreferences("ColorSetting", 0);
-        temp = new ColorHSV(name,
-                setting.getInt(String.format(color + "Hl"), 0),
-                setting.getInt(String.format(color + "Hh"), 0),
-                setting.getInt(String.format(color + "Sl"), 0),
-                setting.getInt(String.format(color + "Sh"), 0),
-                setting.getInt(String.format(color + "Vl"), 0),
-                setting.getInt(String.format(color + "Vh"), 0));
-        return temp;
-    }
-
-    public List<MatOfPoint> findCubeContours (Mat mMat, ColorHSV color, Boolean control) {
-        List<MatOfPoint> contour = new ArrayList<MatOfPoint>();
-        List<MatOfPoint> result = new ArrayList<MatOfPoint>();
-        Mat mInRange = new Mat();
-
-        Scalar scalarLow = new Scalar(color.getLowH(), color.getLowS(), color.getLowV());
-        Scalar scalarHight = new Scalar(color.getHightH(), color.getHightS(), color.getHightV());
-
-        Imgproc.cvtColor(mMat, mInRange, Imgproc.COLOR_BGR2HSV_FULL);
-        Core.inRange(mInRange, scalarLow, scalarHight, mInRange);
-        Imgproc.GaussianBlur(mInRange, mInRange, new Size(5, 5), 0);
-        Imgproc.findContours(mInRange, contour, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_NONE, new Point(0, 0));
-        mInRange.release();
-
-        Rect rectContours = new Rect();
-        int xContours, yContours;
-
-        for (int idx = 0; idx < contour.size(); idx++)
-            if ((Imgproc.contourArea(contour.get(idx)) > 15000) && (Imgproc.contourArea(contour.get(idx)) < 30000)) {
-                result.add(contour.get(idx));
-                rectContours = Imgproc.boundingRect(contour.get(idx));
-                xContours = rectContours.x;
-                yContours = rectContours.y;
-
-                if ((xContours > 0) && (xContours < 150) && (yContours > 0) && (yContours < 120)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 0);
-                    if (!control)
-                        paintButton(button1, color.getName());
-                }
-                if ((xContours > 180) && (xContours < 330) && (yContours > 0) && (yContours < 120)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 1);
-                    if (!control)
-                        paintButton(button2, color.getName());
-                }
-                if ((xContours > 380) && (xContours < 540) && (yContours > 0) && (yContours < 120)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 2);
-                    if (!control)
-                        paintButton(button3, color.getName());
-                }
-                if ((xContours > 0) && (xContours < 150) && (yContours > 200) && (yContours < 350)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 3);
-                    if (!control)
-                        paintButton(button4, color.getName());
-                }
-                if ((xContours > 180) && (xContours < 330) && (yContours > 200) && (yContours < 350)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 4);
-                    if (!control)
-                        paintButton(button5, color.getName());
-                }
-                if ((xContours > 380) && (xContours < 540) && (yContours > 200) && (yContours < 350)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 5);
-                    if (!control)
-                        paintButton(button6, color.getName());
-                }
-                if ((xContours > 0) && (xContours < 150) && (yContours > 370) && (yContours < 540)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 6);
-                    if (!control)
-                        paintButton(button7, color.getName());
-                }
-                if ((xContours > 180) && (xContours < 330) && (yContours > 370) && (yContours < 540)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 7);
-                    if (!control)
-                        paintButton(button8, color.getName());
-                }
-                if ((xContours > 380) && (xContours < 540) && (yContours > 370) && (yContours < 540)){
-                    saveResultColor(rectContours.x, rectContours.y, rectContours.width, rectContours.height, color.getName(), globalSide, 8);
-                    if (!control)
-                        paintButton(button9, color.getName());
-                }
-            }
-        return result;
-    }
-
-    public void saveResultColor (int x_, int y_, int w_, int h_, String color, String side, int index){
-        Cuber item = new Cuber(x_, y_, w_, h_, color);
-        temp[index] = item;
-    }
-
-    private Button paintButton(Button button, String sCube){
-        switch (sCube){
-            case "yellow":
-                button.setBackgroundColor(getResources().getColor(R.color.yellow));
-                break;
-            case "green":
-                button.setBackgroundColor(getResources().getColor(R.color.green));
-                break;
-            case "white":
-                button.setBackgroundColor(getResources().getColor(R.color.white));
-                break;
-            case "blue":
-                button.setBackgroundColor(getResources().getColor(R.color.blue));
-                break;
-            case "orange":
-                button.setBackgroundColor(getResources().getColor(R.color.orange));
-                break;
-            case "red":
-                button.setBackgroundColor(getResources().getColor(R.color.red));
-                break;
-            default:
-                button.setBackgroundColor(getResources().getColor(R.color.black));
-                break;
-        }
-        return button;
-    }
-
-    public List<MatOfPoint> drawCubeContours (Mat mMat, ColorHSV colorHSV, Scalar colorLine) {
-        Rect rectContours = new Rect();
-        List<MatOfPoint> cnt = new ArrayList<MatOfPoint>();
-        switch (globalSide){
-            case "front":
-                cnt = findCubeContours(mMat, colorHSV, consrolFront);
-                break;
-            case "left":
-                cnt = findCubeContours(mMat, colorHSV, consrolLeft);
-                break;
-            case "back":
-                cnt = findCubeContours(mMat, colorHSV, consrolBack);
-                break;
-            case "right":
-                cnt = findCubeContours(mMat, colorHSV, consrolRight);
-                break;
-            case "up":
-                cnt = findCubeContours(mMat, colorHSV, consrolUp);
-                break;
-            case "down":
-                cnt = findCubeContours(mMat, colorHSV, consrolDown);
-                break;
-        }
-
-        switch (pointer) {
-            case "":
-                for (MatOfPoint point : cnt) {
-                    rectContours = Imgproc.boundingRect(point);
-                    Imgproc.rectangle(mMat, rectContours.tl(), rectContours.br(), colorLine, 5);
-//                  Imgproc.putText(mMat, String.valueOf(String.valueOf(rectContours.x) + " " + String.valueOf(rectContours.y)), new Point(rectContours.x, rectContours.y), Core.FONT_HERSHEY_SIMPLEX, 1.0,
-//                          new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
-                }
-                break;
-            case "R":
-                Point fPoint = new Point();
-                Point sPoint = new Point();
-                fPoint.x = 120;
-                fPoint.y = 200;
-                sPoint.x = 520;
-                sPoint.y = 200;
-                Point hightFPoint = new Point();
-                hightFPoint.x = 480;
-                hightFPoint.y = 160;
-                Point lowFPoint = new Point();
-                lowFPoint.x = 480;
-                lowFPoint.y = 240;
-                Imgproc.line(mMat, fPoint, sPoint, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, hightFPoint, sPoint, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, lowFPoint, sPoint, new Scalar(0, 70, 173), 5);
-
-                Point fPoint2 = new Point();
-                Point sPoint2 = new Point();
-                fPoint2.x = 120;
-                fPoint2.y = 400;
-                sPoint2.x = 520;
-                sPoint2.y = 400;
-                Point hightFPoint2 = new Point();
-                hightFPoint2.x = 480;
-                hightFPoint2.y = 360;
-                Point lowFPoint2 = new Point();
-                lowFPoint2.x = 480;
-                lowFPoint2.y = 440;
-                Imgproc.line(mMat, fPoint2, sPoint2, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, hightFPoint2, sPoint2, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, lowFPoint2, sPoint2, new Scalar(0, 70, 173), 5);
-                break;
-
-            case "U":
-                Point fPointUp = new Point();
-                Point sPointUp = new Point();
-                fPointUp.x = 200;
-                fPointUp.y = 120;
-                sPointUp.x = 200;
-                sPointUp.y = 520;
-                Point hightFPointUp = new Point();
-                hightFPointUp.x = 160;
-                hightFPointUp.y = 200;
-                Point lowFPointUp = new Point();
-                lowFPointUp.x = 240;
-                lowFPointUp.y = 200;
-                Imgproc.line(mMat, fPointUp, sPointUp, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, hightFPointUp, fPointUp, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, lowFPointUp, fPointUp, new Scalar(0, 70, 173), 5);
-
-                Point fPoint2Up2 = new Point();
-                Point sPoint2Up2 = new Point();
-                fPoint2Up2.x = 400;
-                fPoint2Up2.y = 120;
-                sPoint2Up2.x = 400;
-                sPoint2Up2.y = 520;
-                Point hightFPoint2Up2 = new Point();
-                hightFPoint2Up2.x = 360;
-                hightFPoint2Up2.y = 200;
-                Point lowFPoint2Up2 = new Point();
-                lowFPoint2Up2.x = 440;
-                lowFPoint2Up2.y = 200;
-                Imgproc.line(mMat, fPoint2Up2, sPoint2Up2, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, hightFPoint2Up2, fPoint2Up2, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, lowFPoint2Up2, fPoint2Up2, new Scalar(0, 70, 173), 5);
-                break;
-
-            case "D":
-                Point fPointDown = new Point();
-                Point sPointDown = new Point();
-                fPointDown.x = 200;
-                fPointDown.y = 120;
-                sPointDown.x = 200;
-                sPointDown.y = 520;
-                Point hightFPointDown = new Point();
-                hightFPointDown.x = 160;
-                hightFPointDown.y = 480;
-                Point lowFPointDown = new Point();
-                lowFPointDown.x = 240;
-                lowFPointDown.y = 480;
-                Imgproc.line(mMat, fPointDown, sPointDown, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, hightFPointDown, sPointDown, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, lowFPointDown, sPointDown, new Scalar(0, 70, 173), 5);
-
-                Point fPoint2Down2 = new Point();
-                Point sPoint2Down2 = new Point();
-                fPoint2Down2.x = 400;
-                fPoint2Down2.y = 120;
-                sPoint2Down2.x = 400;
-                sPoint2Down2.y = 520;
-                Point hightFPoint2Down2 = new Point();
-                hightFPoint2Down2.x = 360;
-                hightFPoint2Down2.y = 480;
-                Point lowFPoint2Down2 = new Point();
-                lowFPoint2Down2.x = 440;
-                lowFPoint2Down2.y = 480;
-                Imgproc.line(mMat, fPoint2Down2, sPoint2Down2, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, hightFPoint2Down2, sPoint2Down2, new Scalar(0, 70, 173), 5);
-                Imgproc.line(mMat, lowFPoint2Down2, sPoint2Down2, new Scalar(0, 70, 173), 5);
-                break;
-        }
-        return cnt;
-    }
-
+    /**
+     * Обработка каждого кадра камеры.
+     * Применяются преобразования изображения, отрисовка контуров для каждого цвета.
+     */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mFrame = inputFrame.rgba();
         Core.transpose(mFrame, mFrame);
-        Imgproc.resize(mFrame, mFrame, mFrame.size(), 0,0, 0);
-        Core.flip(mFrame, mFrame, 1 );
+        Imgproc.resize(mFrame, mFrame, mFrame.size());
+        Core.flip(mFrame, mFrame, 1);
 
-        List<MatOfPoint> cnt = new ArrayList<MatOfPoint>();
-
+        // Отрисовка контуров для каждого цвета
         drawCubeContours(mFrame, redHsv, new Scalar(255, 0, 0));
         drawCubeContours(mFrame, blueHsv, new Scalar(0, 0, 255));
         drawCubeContours(mFrame, greenHsv, new Scalar(0, 255, 0));
@@ -938,5 +522,122 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         drawCubeContours(mFrame, whiteHsv, new Scalar(255, 255, 255));
 
         return mFrame;
+    }
+
+    // --- Вспомогательные классы и перечисления ---
+
+    /**
+     * Перечисление сторон куба с методами для перехода к следующей/предыдущей стороне.
+     */
+    private enum CubeSide {
+        FRONT, RIGHT, BACK, LEFT, UP, DOWN;
+
+        public CubeSide getNext() {
+            if (this == FRONT) return RIGHT;
+            else if (this == RIGHT) return BACK;
+            else if (this == BACK) return LEFT;
+            else if (this == LEFT) return UP;
+            else if (this == UP) return DOWN;
+            else if (this == DOWN) return FRONT;
+            return FRONT;
+        }
+
+        public CubeSide getPrevious() {
+            if (this == FRONT) return DOWN;
+            else if (this == DOWN) return UP;
+            else if (this == UP) return LEFT;
+            else if (this == LEFT) return BACK;
+            else if (this == BACK) return RIGHT;
+            else if (this == RIGHT) return FRONT;
+            return FRONT;
+        }
+
+        public String getDisplayName() {
+            return this.name().toLowerCase();
+        }
+    }
+
+    /**
+     * Класс для хранения данных по одной стороне куба.
+     */
+    private static class CubeFace {
+        public Cuber[] cubers;
+        public boolean controlled;
+
+        public CubeFace() {
+            cubers = new Cuber[9];
+            controlled = false;
+        }
+    }
+
+    /**
+     * Класс для определения региона на экране.
+     */
+    private static class Region {
+        int minX, maxX, minY, maxY;
+        Button button;
+        int index;
+
+        public Region(int minX, int maxX, int minY, int maxY, Button button, int index) {
+            this.minX = minX;
+            this.maxX = maxX;
+            this.minY = minY;
+            this.maxY = maxY;
+            this.button = button;
+            this.index = index;
+        }
+
+        /**
+         * Проверяет, попадают ли координаты в данный регион.
+         */
+        public boolean contains(int x, int y) {
+            return x > minX && x < maxX && y > minY && y < maxY;
+        }
+    }
+
+    // Extract the BaseLoaderCallback as a separate class
+    private static class OpenCVLoaderCallback extends BaseLoaderCallback {
+        private final CameraBridgeViewBase mOpenCvCameraView;
+
+        public OpenCVLoaderCallback(AppCompatActivity appCompatActivity, CameraBridgeViewBase cameraView) {
+            super(appCompatActivity);
+            this.mOpenCvCameraView = cameraView;
+        }
+
+        @Override
+        public void onManagerConnected(int status) {
+            if (status == LoaderCallbackInterface.SUCCESS) {
+                Log.i(TAG, "OpenCV loaded successfully");
+                mOpenCvCameraView.enableView();
+            } else {
+                super.onManagerConnected(status);
+            }
+        }
+    }
+
+    // Extract animatePointer method as a separate class
+    private static class PointerAnimator implements Runnable {
+        private final String[] sequence;
+        private final long[] delays;
+        private final MainActivity activity;
+
+        public PointerAnimator(MainActivity activity, String[] sequence, long[] delays) {
+            this.activity = activity;
+            this.sequence = sequence;
+            this.delays = delays;
+        }
+
+        @Override
+        public void run() {
+            for (int i = 0; i < sequence.length; i++) {
+                activity.pointer = sequence[i];
+                try {
+                    Thread.sleep(delays[i]);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            activity.pointer = "";
+        }
     }
 }
