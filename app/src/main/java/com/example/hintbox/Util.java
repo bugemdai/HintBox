@@ -1,7 +1,7 @@
 package com.example.hintbox;
 
 public class Util {
-    //Moves
+    // Constants for moves
     static final byte Ux1 = 0;
     static final byte Ux2 = 1;
     static final byte Ux3 = 2;
@@ -21,7 +21,7 @@ public class Util {
     static final byte Bx2 = 16;
     static final byte Bx3 = 17;
 
-    //Facelets
+    // Constants for facelets
     static final byte U1 = 0;
     static final byte U2 = 1;
     static final byte U3 = 2;
@@ -77,7 +77,7 @@ public class Util {
     static final byte B8 = 52;
     static final byte B9 = 53;
 
-    //Colors
+    // Constants for colors
     static final byte U = 0;
     static final byte R = 1;
     static final byte F = 2;
@@ -85,24 +85,33 @@ public class Util {
     static final byte L = 4;
     static final byte B = 5;
 
+    // Corner facelet positions
     static final byte[][] cornerFacelet = {
             { U9, R1, F3 }, { U7, F1, L3 }, { U1, L1, B3 }, { U3, B1, R3 },
             { D3, F9, R7 }, { D1, L9, F7 }, { D7, B9, L7 }, { D9, R9, B7 }
     };
+
+    // Edge facelet positions
     static final byte[][] edgeFacelet = {
             { U6, R2 }, { U8, F2 }, { U4, L2 }, { U2, B2 }, { D6, R8 }, { D2, F8 },
             { D4, L8 }, { D8, B8 }, { F6, R4 }, { F4, L6 }, { B6, L4 }, { B4, R6 }
     };
 
+    // Combination table
     static int[][] Cnk = new int[13][13];
+
+    // Move to string mapping
     static String[] move2str = {
             "U ", "U2", "U'", "R ", "R2", "R'", "F ", "F2", "F'",
             "D ", "D2", "D'", "L ", "L2", "L'", "B ", "B2", "B'"
     };
+
+    // Mapping arrays
     static int[] ud2std = {Ux1, Ux2, Ux3, Rx2, Fx2, Dx1, Dx2, Dx3, Lx2, Bx2, Rx1, Rx3, Fx1, Fx3, Lx1, Lx3, Bx1, Bx3};
     static int[] std2ud = new int[18];
     static int[] ckmv2bit = new int[11];
 
+    // Solution class to store and manipulate solution moves
     static class Solution {
         int length = 0;
         int depth1 = 0;
@@ -112,12 +121,14 @@ public class Util {
 
         Solution() {}
 
+        // Set arguments for the solution
         void setArgs(int verbose, int urfIdx, int depth1) {
             this.verbose = verbose;
             this.urfIdx = urfIdx;
             this.depth1 = depth1;
         }
 
+        // Append a move to the solution
         void appendSolMove(int curMove) {
             if (length == 0) {
                 moves[length++] = curMove;
@@ -149,6 +160,7 @@ public class Util {
             moves[length++] = curMove;
         }
 
+        // Convert solution to string
         public String toString() {
             StringBuffer sb = new StringBuffer();
             int urf = (verbose & Search.INVERSE_SOLUTION) != 0 ? (urfIdx + 3) % 6 : urfIdx;
@@ -174,6 +186,7 @@ public class Util {
         }
     }
 
+    // Convert facelet representation to cubie cube
     static void toCubieCube(byte[] f, CubieCube ccRet) {
         byte ori;
         for (int i = 0; i < 8; i++) {
@@ -213,6 +226,7 @@ public class Util {
         }
     }
 
+    // Convert cubie cube to facelet representation
     static String toFaceCube(CubieCube cc) {
         char[] f = new char[54];
         char[] ts = {'U', 'R', 'F', 'D', 'L', 'B'};
@@ -236,6 +250,7 @@ public class Util {
         return new String(f);
     }
 
+    // Calculate parity of a permutation
     static int getNParity(int idx, int n) {
         int p = 0;
         for (int i = n - 2; i >= 0; i--) {
@@ -245,14 +260,17 @@ public class Util {
         return p & 1;
     }
 
+    // Set value in a byte array
     static byte setVal(int val0, int val, boolean isEdge) {
         return (byte) (isEdge ? (val << 1 | val0 & 1) : (val | val0 & ~7));
     }
 
+    // Get value from a byte array
     static int getVal(int val0, boolean isEdge) {
         return isEdge ? val0 >> 1 : val0 & 7;
     }
 
+    // Set permutation in a byte array
     static void setNPerm(byte[] arr, int idx, int n, boolean isEdge) {
         long val = 0xFEDCBA9876543210L;
         long extract = 0;
@@ -270,6 +288,7 @@ public class Util {
         arr[n - 1] = setVal(arr[n - 1], (int) (val & 0xf), isEdge);
     }
 
+    // Get permutation from a byte array
     static int getNPerm(byte[] arr, int n, boolean isEdge) {
         int idx = 0;
         long val = 0xFEDCBA9876543210L;
@@ -281,6 +300,7 @@ public class Util {
         return idx;
     }
 
+    // Get combination index
     static int getComb(byte[] arr, int mask, boolean isEdge) {
         int end = arr.length - 1;
         int idxC = 0, r = 4;
@@ -293,6 +313,7 @@ public class Util {
         return idxC;
     }
 
+    // Set combination in a byte array
     static void setComb(byte[] arr, int idxC, int mask, boolean isEdge) {
         int end = arr.length - 1;
         int r = 4, fill = end;
@@ -309,6 +330,7 @@ public class Util {
         }
     }
 
+    // Static initializer block to set up mapping arrays
     static {
         for (int i = 0; i < 18; i++) {
             std2ud[ud2std[i]] = i;
