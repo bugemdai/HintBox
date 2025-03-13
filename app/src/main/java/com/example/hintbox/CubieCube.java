@@ -4,43 +4,38 @@ import java.util.Arrays;
 
 public class CubieCube {
 
-    static CubieCube[] CubeSym = new CubieCube[16];
+    static CubieCube[] cubeSymmetries = new CubieCube[16];
+    static CubieCube[] moveCubes = new CubieCube[18];
+    static long[] moveCubeSymmetries = new long[18];
+    static int[] firstMoveSymmetries = new int[48];
 
-    static CubieCube[] moveCube = new CubieCube[18];
+    static int[][] symmetryMultiplication = new int[16][16];
+    static int[][] inverseSymmetryMultiplication = new int[16][16];
+    static int[][] symmetryMoves = new int[16][18];
+    static int[] symmetry8Moves = new int[8 * 18];
+    static int[][] symmetryMoveUD = new int[16][18];
 
-    static long[] moveCubeSym = new long[18];
-    static int[] firstMoveSym = new int[48];
+    static char[] flipSymmetryToRaw = new char[CoordCube.N_FLIP_SYM];
+    static char[] twistSymmetryToRaw = new char[CoordCube.N_TWIST_SYM];
+    static char[] edgePermutationSymmetryToRaw = new char[CoordCube.N_PERM_SYM];
+    static byte[] permutationToCombinationP = new byte[CoordCube.N_PERM_SYM];
+    static char[] inverseEdgePermutationSymmetry = new char[CoordCube.N_PERM_SYM];
+    static byte[] inverseMiddlePermutation = new byte[CoordCube.N_MPERM];
 
-    static int[][] SymMult = new int[16][16];
-    static int[][] SymMultInv = new int[16][16];
-    static int[][] SymMove = new int[16][18];
-    static int[] Sym8Move = new int[8 * 18];
-    static int[][] SymMoveUD = new int[16][18];
+    static final int SYMMETRY_EDGE_TO_CORNER_MAGIC = 0x00DDDD00;
 
-    static char[] FlipS2R = new char[CoordCube.N_FLIP_SYM];
-    static char[] TwistS2R = new char[CoordCube.N_TWIST_SYM];
-    static char[] EPermS2R = new char[CoordCube.N_PERM_SYM];
-    static byte[] Perm2CombP = new byte[CoordCube.N_PERM_SYM];
-    static char[] PermInvEdgeSym = new char[CoordCube.N_PERM_SYM];
-    static byte[] MPermInv = new byte[CoordCube.N_MPERM];
+    static char[] flipRawToSymmetry = new char[CoordCube.N_FLIP];
+    static char[] twistRawToSymmetry = new char[CoordCube.N_TWIST];
+    static char[] edgePermutationRawToSymmetry = new char[CoordCube.N_PERM];
+    static char[] flipSymmetryToRawFull = Search.USE_TWIST_FLIP_PRUN ? new char[CoordCube.N_FLIP_SYM * 8] : null;
 
-    static final int SYM_E2C_MAGIC = 0x00DDDD00;
-    static int ESym2CSym(int idx) {
-        return idx ^ (SYM_E2C_MAGIC >> ((idx & 0xf) << 1) & 3);
-    }
-
-    static char[] FlipR2S = new char[CoordCube.N_FLIP];
-    static char[] TwistR2S = new char[CoordCube.N_TWIST];
-    static char[] EPermR2S = new char[CoordCube.N_PERM];
-    static char[] FlipS2RF = Search.USE_TWIST_FLIP_PRUN ? new char[CoordCube.N_FLIP_SYM * 8] : null;
-
-    static char[] SymStateTwist;// = new char[CoordCube.N_TWIST_SYM];
-    static char[] SymStateFlip;// = new char[CoordCube.N_FLIP_SYM];
-    static char[] SymStatePerm;// = new char[CoordCube.N_PERM_SYM];
+    static char[] symmetryStateTwist;
+    static char[] symmetryStateFlip;
+    static char[] symmetryStatePermutation;
 
     static CubieCube urf1 = new CubieCube(2531, 1373, 67026819, 1367);
     static CubieCube urf2 = new CubieCube(2089, 1906, 322752913, 2040);
-    static byte[][] urfMove = new byte[][] {
+    static byte[][] urfMoves = new byte[][] {
             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17},
             {6, 7, 8, 0, 1, 2, 3, 4, 5, 15, 16, 17, 9, 10, 11, 12, 13, 14},
             {3, 4, 5, 6, 7, 8, 0, 1, 2, 12, 13, 14, 15, 16, 17, 9, 10, 11},
@@ -49,327 +44,327 @@ public class CubieCube {
             {5, 4, 3, 8, 7, 6, 2, 1, 0, 14, 13, 12, 17, 16, 15, 11, 10, 9}
     };
 
-    byte[] ca = {0, 1, 2, 3, 4, 5, 6, 7};
-    byte[] ea = {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22};
-    CubieCube temps = null;
+    byte[] cornerArray = {0, 1, 2, 3, 4, 5, 6, 7};
+    byte[] edgeArray = {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22};
+    CubieCube temporaryCube = null;
 
     CubieCube() {
     }
 
-    CubieCube(int cperm, int twist, int eperm, int flip) {
-        this.setCPerm(cperm);
+    CubieCube(int cornerPermutation, int twist, int edgePermutation, int flip) {
+        this.setCornerPermutation(cornerPermutation);
         this.setTwist(twist);
-        Util.setNPerm(ea, eperm, 12, true);
+        Util.setNPerm(edgeArray, edgePermutation, 12, true);
         this.setFlip(flip);
     }
 
-    CubieCube(CubieCube c) {
-        copy(c);
+    CubieCube(CubieCube cube) {
+        copy(cube);
     }
 
-    void copy(CubieCube c) {
+    void copy(CubieCube cube) {
         for (int i = 0; i < 8; i++) {
-            this.ca[i] = c.ca[i];
+            this.cornerArray[i] = cube.cornerArray[i];
         }
         for (int i = 0; i < 12; i++) {
-            this.ea[i] = c.ea[i];
+            this.edgeArray[i] = cube.edgeArray[i];
         }
     }
 
-    void invCubieCube() {
-        if (temps == null) {
-            temps = new CubieCube();
+    void invertCubieCube() {
+        if (temporaryCube == null) {
+            temporaryCube = new CubieCube();
         }
         for (byte edge = 0; edge < 12; edge++) {
-            temps.ea[ea[edge] >> 1] = (byte) (edge << 1 | ea[edge] & 1);
+            temporaryCube.edgeArray[edgeArray[edge] >> 1] = (byte) (edge << 1 | edgeArray[edge] & 1);
         }
-        for (byte corn = 0; corn < 8; corn++) {
-            temps.ca[ca[corn] & 0x7] = (byte) (corn | 0x20 >> (ca[corn] >> 3) & 0x18);
+        for (byte corner = 0; corner < 8; corner++) {
+            temporaryCube.cornerArray[cornerArray[corner] & 0x7] = (byte) (corner | 0x20 >> (cornerArray[corner] >> 3) & 0x18);
         }
-        copy(temps);
+        copy(temporaryCube);
     }
 
-    static void CornMult(CubieCube a, CubieCube b, CubieCube prod) {
-        for (int corn = 0; corn < 8; corn++) {
-            int oriA = a.ca[b.ca[corn] & 7] >> 3;
-            int oriB = b.ca[corn] >> 3;
-            prod.ca[corn] = (byte) (a.ca[b.ca[corn] & 7] & 7 | (oriA + oriB) % 3 << 3);
-        }
-    }
-
-    static void CornMultFull(CubieCube a, CubieCube b, CubieCube prod) {
-        for (int corn = 0; corn < 8; corn++) {
-            int oriA = a.ca[b.ca[corn] & 7] >> 3;
-            int oriB = b.ca[corn] >> 3;
-            int ori = oriA + ((oriA < 3) ? oriB : 6 - oriB);
-            ori = ori % 3 + ((oriA < 3) == (oriB < 3) ? 0 : 3);
-            prod.ca[corn] = (byte) (a.ca[b.ca[corn] & 7] & 7 | ori << 3);
+    static void multiplyCorners(CubieCube a, CubieCube b, CubieCube product) {
+        for (int corner = 0; corner < 8; corner++) {
+            int orientationA = a.cornerArray[b.cornerArray[corner] & 7] >> 3;
+            int orientationB = b.cornerArray[corner] >> 3;
+            product.cornerArray[corner] = (byte) (a.cornerArray[b.cornerArray[corner] & 7] & 7 | (orientationA + orientationB) % 3 << 3);
         }
     }
 
-    static void EdgeMult(CubieCube a, CubieCube b, CubieCube prod) {
-        for (int ed = 0; ed < 12; ed++) {
-            prod.ea[ed] = (byte) (a.ea[b.ea[ed] >> 1] ^ (b.ea[ed] & 1));
+    static void multiplyCornersFull(CubieCube a, CubieCube b, CubieCube product) {
+        for (int corner = 0; corner < 8; corner++) {
+            int orientationA = a.cornerArray[b.cornerArray[corner] & 7] >> 3;
+            int orientationB = b.cornerArray[corner] >> 3;
+            int orientation = orientationA + ((orientationA < 3) ? orientationB : 6 - orientationB);
+            orientation = orientation % 3 + ((orientationA < 3) == (orientationB < 3) ? 0 : 3);
+            product.cornerArray[corner] = (byte) (a.cornerArray[b.cornerArray[corner] & 7] & 7 | orientation << 3);
         }
     }
 
-    static void CornConjugate(CubieCube a, int idx, CubieCube b) {
-        CubieCube sinv = CubeSym[SymMultInv[0][idx]];
-        CubieCube s = CubeSym[idx];
-        for (int corn = 0; corn < 8; corn++) {
-            int oriA = sinv.ca[a.ca[s.ca[corn] & 7] & 7] >> 3;
-            int oriB = a.ca[s.ca[corn] & 7] >> 3;
-            int ori = (oriA < 3) ? oriB : (3 - oriB) % 3;
-            b.ca[corn] = (byte) (sinv.ca[a.ca[s.ca[corn] & 7] & 7] & 7 | ori << 3);
+    static void multiplyEdges(CubieCube a, CubieCube b, CubieCube product) {
+        for (int edge = 0; edge < 12; edge++) {
+            product.edgeArray[edge] = (byte) (a.edgeArray[b.edgeArray[edge] >> 1] ^ (b.edgeArray[edge] & 1));
         }
     }
 
-    static void EdgeConjugate(CubieCube a, int idx, CubieCube b) {
-        CubieCube sinv = CubeSym[SymMultInv[0][idx]];
-        CubieCube s = CubeSym[idx];
-        for (int ed = 0; ed < 12; ed++) {
-            b.ea[ed] = (byte) (sinv.ea[a.ea[s.ea[ed] >> 1] >> 1] ^ (a.ea[s.ea[ed] >> 1] & 1) ^ (s.ea[ed] & 1));
+    static void conjugateCorners(CubieCube a, int index, CubieCube b) {
+        CubieCube inverseSymmetry = cubeSymmetries[inverseSymmetryMultiplication[0][index]];
+        CubieCube symmetry = cubeSymmetries[index];
+        for (int corner = 0; corner < 8; corner++) {
+            int orientationA = inverseSymmetry.cornerArray[a.cornerArray[symmetry.cornerArray[corner] & 7] & 7] >> 3;
+            int orientationB = a.cornerArray[symmetry.cornerArray[corner] & 7] >> 3;
+            int orientation = (orientationA < 3) ? orientationB : (3 - orientationB) % 3;
+            b.cornerArray[corner] = (byte) (inverseSymmetry.cornerArray[a.cornerArray[symmetry.cornerArray[corner] & 7] & 7] & 7 | orientation << 3);
         }
     }
 
-    static int getPermSymInv(int idx, int sym, boolean isCorner) {
-        int idxi = PermInvEdgeSym[idx];
+    static void conjugateEdges(CubieCube a, int index, CubieCube b) {
+        CubieCube inverseSymmetry = cubeSymmetries[inverseSymmetryMultiplication[0][index]];
+        CubieCube symmetry = cubeSymmetries[index];
+        for (int edge = 0; edge < 12; edge++) {
+            b.edgeArray[edge] = (byte) (inverseSymmetry.edgeArray[a.edgeArray[symmetry.edgeArray[edge] >> 1] >> 1] ^ (a.edgeArray[symmetry.edgeArray[edge] >> 1] & 1) ^ (symmetry.edgeArray[edge] & 1));
+        }
+    }
+
+    static int getPermutationSymmetryInverse(int index, int symmetry, boolean isCorner) {
+        int indexInverse = inverseEdgePermutationSymmetry[index];
         if (isCorner) {
-            idxi = ESym2CSym(idxi);
+            indexInverse = edgeSymmetryToCornerSymmetry(indexInverse);
         }
-        return idxi & 0xfff0 | SymMult[idxi & 0xf][sym];
+        return indexInverse & 0xfff0 | symmetryMultiplication[indexInverse & 0xf][symmetry];
     }
 
-    static int getSkipMoves(long ssym) {
-        int ret = 0;
-        for (int i = 1; (ssym >>= 1) != 0; i++) {
-            if ((ssym & 1) == 1) {
-                ret |= firstMoveSym[i];
+    static int getSkipMoves(long symmetryState) {
+        int result = 0;
+        for (int i = 1; (symmetryState >>= 1) != 0; i++) {
+            if ((symmetryState & 1) == 1) {
+                result |= firstMoveSymmetries[i];
             }
         }
-        return ret;
+        return result;
     }
 
-    void URFConjugate() {
-        if (temps == null) {
-            temps = new CubieCube();
+    void urfConjugate() {
+        if (temporaryCube == null) {
+            temporaryCube = new CubieCube();
         }
-        CornMult(urf2, this, temps);
-        CornMult(temps, urf1, this);
-        EdgeMult(urf2, this, temps);
-        EdgeMult(temps, urf1, this);
+        multiplyCorners(urf2, this, temporaryCube);
+        multiplyCorners(temporaryCube, urf1, this);
+        multiplyEdges(urf2, this, temporaryCube);
+        multiplyEdges(temporaryCube, urf1, this);
     }
 
     int getFlip() {
-        int idx = 0;
+        int index = 0;
         for (int i = 0; i < 11; i++) {
-            idx = idx << 1 | ea[i] & 1;
+            index = index << 1 | edgeArray[i] & 1;
         }
-        return idx;
+        return index;
     }
 
-    void setFlip(int idx) {
-        int parity = 0, val;
-        for (int i = 10; i >= 0; i--, idx >>= 1) {
-            parity ^= (val = idx & 1);
-            ea[i] = (byte) (ea[i] & ~1 | val);
+    void setFlip(int index) {
+        int parity = 0, value;
+        for (int i = 10; i >= 0; i--, index >>= 1) {
+            parity ^= (value = index & 1);
+            edgeArray[i] = (byte) (edgeArray[i] & ~1 | value);
         }
-        ea[11] = (byte) (ea[11] & ~1 | parity);
+        edgeArray[11] = (byte) (edgeArray[11] & ~1 | parity);
     }
 
-    int getFlipSym() {
-        return FlipR2S[getFlip()];
+    int getFlipSymmetry() {
+        return flipRawToSymmetry[getFlip()];
     }
 
     int getTwist() {
-        int idx = 0;
+        int index = 0;
         for (int i = 0; i < 7; i++) {
-            idx += (idx << 1) + (ca[i] >> 3);
+            index += (index << 1) + (cornerArray[i] >> 3);
         }
-        return idx;
+        return index;
     }
 
-    void setTwist(int idx) {
-        int twst = 15, val;
-        for (int i = 6; i >= 0; i--, idx /= 3) {
-            twst -= (val = idx % 3);
-            ca[i] = (byte) (ca[i] & 0x7 | val << 3);
+    void setTwist(int index) {
+        int twist = 15, value;
+        for (int i = 6; i >= 0; i--, index /= 3) {
+            twist -= (value = index % 3);
+            cornerArray[i] = (byte) (cornerArray[i] & 0x7 | value << 3);
         }
-        ca[7] = (byte) (ca[7] & 0x7 | (twst % 3) << 3);
+        cornerArray[7] = (byte) (cornerArray[7] & 0x7 | (twist % 3) << 3);
     }
 
-    int getTwistSym() {
-        return TwistR2S[getTwist()];
+    int getTwistSymmetry() {
+        return twistRawToSymmetry[getTwist()];
     }
 
     int getUDSlice() {
-        return 494 - Util.getComb(ea, 8, true);
+        return 494 - Util.getComb(edgeArray, 8, true);
     }
 
-    void setUDSlice(int idx) {
-        Util.setComb(ea, 494 - idx, 8, true);
+    void setUDSlice(int index) {
+        Util.setComb(edgeArray, 494 - index, 8, true);
     }
 
-    int getCPerm() {
-        return Util.getNPerm(ca, 8, false);
+    int getCornerPermutation() {
+        return Util.getNPerm(cornerArray, 8, false);
     }
 
-    void setCPerm(int idx) {
-        Util.setNPerm(ca, idx, 8, false);
+    void setCornerPermutation(int index) {
+        Util.setNPerm(cornerArray, index, 8, false);
     }
 
-    int getCPermSym() {
-        return ESym2CSym(EPermR2S[getCPerm()]);
+    int getCornerPermutationSymmetry() {
+        return edgeSymmetryToCornerSymmetry(edgePermutationRawToSymmetry[getCornerPermutation()]);
     }
 
-    int getEPerm() {
-        return Util.getNPerm(ea, 8, true);
+    int getEdgePermutation() {
+        return Util.getNPerm(edgeArray, 8, true);
     }
 
-    void setEPerm(int idx) {
-        Util.setNPerm(ea, idx, 8, true);
+    void setEdgePermutation(int index) {
+        Util.setNPerm(edgeArray, index, 8, true);
     }
 
-    int getEPermSym() {
-        return EPermR2S[getEPerm()];
+    int getEdgePermutationSymmetry() {
+        return edgePermutationRawToSymmetry[getEdgePermutation()];
     }
 
-    int getMPerm() {
-        return Util.getNPerm(ea, 12, true) % 24;
+    int getMiddlePermutation() {
+        return Util.getNPerm(edgeArray, 12, true) % 24;
     }
 
-    void setMPerm(int idx) {
-        Util.setNPerm(ea, idx, 12, true);
+    void setMiddlePermutation(int index) {
+        Util.setNPerm(edgeArray, index, 12, true);
     }
 
-    int getCComb() {
-        return Util.getComb(ca, 0, false);
+    int getCornerCombination() {
+        return Util.getComb(cornerArray, 0, false);
     }
 
-    void setCComb(int idx) {
-        Util.setComb(ca, idx, 0, false);
+    void setCornerCombination(int index) {
+        Util.setComb(cornerArray, index, 0, false);
     }
 
     int verify() {
         int sum = 0;
         int edgeMask = 0;
-        for (int e = 0; e < 12; e++) {
-            edgeMask |= 1 << (ea[e] >> 1);
-            sum ^= ea[e] & 1;
+        for (int edge = 0; edge < 12; edge++) {
+            edgeMask |= 1 << (edgeArray[edge] >> 1);
+            sum ^= edgeArray[edge] & 1;
         }
         if (edgeMask != 0xfff) {
-            return -2;// missing edges
+            return -2; // missing edges
         }
         if (sum != 0) {
             return -3;
         }
-        int cornMask = 0;
+        int cornerMask = 0;
         sum = 0;
-        for (int c = 0; c < 8; c++) {
-            cornMask |= 1 << (ca[c] & 7);
-            sum += ca[c] >> 3;
+        for (int corner = 0; corner < 8; corner++) {
+            cornerMask |= 1 << (cornerArray[corner] & 7);
+            sum += cornerArray[corner] >> 3;
         }
-        if (cornMask != 0xff) {
-            return -4;// missing corners
+        if (cornerMask != 0xff) {
+            return -4; // missing corners
         }
         if (sum % 3 != 0) {
-            return -5;// twisted corner
+            return -5; // twisted corner
         }
-        if ((Util.getNParity(Util.getNPerm(ea, 12, true), 12) ^ Util.getNParity(getCPerm(), 8)) != 0) {
-            return -6;// parity error
+        if ((Util.getNParity(Util.getNPerm(edgeArray, 12, true), 12) ^ Util.getNParity(getCornerPermutation(), 8)) != 0) {
+            return -6; // parity error
         }
-        return 0;// cube ok
+        return 0; // cube ok
     }
 
     long selfSymmetry() {
-        CubieCube c = new CubieCube(this);
-        CubieCube d = new CubieCube();
-        int cperm = c.getCPermSym() >> 4;
-        long sym = 0L;
-        for (int urfInv = 0; urfInv < 6; urfInv++) {
-            int cpermx = c.getCPermSym() >> 4;
-            if (cperm == cpermx) {
+        CubieCube cubeCopy = new CubieCube(this);
+        CubieCube cubeTemp = new CubieCube();
+        int cornerPermutation = cubeCopy.getCornerPermutationSymmetry() >> 4;
+        long symmetry = 0L;
+        for (int urfInverse = 0; urfInverse < 6; urfInverse++) {
+            int cornerPermutationX = cubeCopy.getCornerPermutationSymmetry() >> 4;
+            if (cornerPermutation == cornerPermutationX) {
                 for (int i = 0; i < 16; i++) {
-                    CornConjugate(c, SymMultInv[0][i], d);
-                    if (Arrays.equals(d.ca, ca)) {
-                        EdgeConjugate(c, SymMultInv[0][i], d);
-                        if (Arrays.equals(d.ea, ea)) {
-                            sym |= 1L << Math.min(urfInv << 4 | i, 48);
+                    conjugateCorners(cubeCopy, inverseSymmetryMultiplication[0][i], cubeTemp);
+                    if (Arrays.equals(cubeTemp.cornerArray, cornerArray)) {
+                        conjugateEdges(cubeCopy, inverseSymmetryMultiplication[0][i], cubeTemp);
+                        if (Arrays.equals(cubeTemp.edgeArray, edgeArray)) {
+                            symmetry |= 1L << Math.min(urfInverse << 4 | i, 48);
                         }
                     }
                 }
             }
-            c.URFConjugate();
-            if (urfInv % 3 == 2) {
-                c.invCubieCube();
+            cubeCopy.urfConjugate();
+            if (urfInverse % 3 == 2) {
+                cubeCopy.invertCubieCube();
             }
         }
-        return sym;
+        return symmetry;
     }
 
-    static void initMove() {
-        moveCube[0] = new CubieCube(15120, 0, 119750400, 0);
-        moveCube[3] = new CubieCube(21021, 1494, 323403417, 0);
-        moveCube[6] = new CubieCube(8064, 1236, 29441808, 550);
-        moveCube[9] = new CubieCube(9, 0, 5880, 0);
-        moveCube[12] = new CubieCube(1230, 412, 2949660, 0);
-        moveCube[15] = new CubieCube(224, 137, 328552, 137);
+    static void initializeMoves() {
+        moveCubes[0] = new CubieCube(15120, 0, 119750400, 0);
+        moveCubes[3] = new CubieCube(21021, 1494, 323403417, 0);
+        moveCubes[6] = new CubieCube(8064, 1236, 29441808, 550);
+        moveCubes[9] = new CubieCube(9, 0, 5880, 0);
+        moveCubes[12] = new CubieCube(1230, 412, 2949660, 0);
+        moveCubes[15] = new CubieCube(224, 137, 328552, 137);
         for (int a = 0; a < 18; a += 3) {
             for (int p = 0; p < 2; p++) {
-                moveCube[a + p + 1] = new CubieCube();
-                EdgeMult(moveCube[a + p], moveCube[a], moveCube[a + p + 1]);
-                CornMult(moveCube[a + p], moveCube[a], moveCube[a + p + 1]);
+                moveCubes[a + p + 1] = new CubieCube();
+                multiplyEdges(moveCubes[a + p], moveCubes[a], moveCubes[a + p + 1]);
+                multiplyCorners(moveCubes[a + p], moveCubes[a], moveCubes[a + p + 1]);
             }
         }
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < 8; i++) {
-            sb.append("|" + (ca[i] & 7) + " " + (ca[i] >> 3));
+            stringBuilder.append("|" + (cornerArray[i] & 7) + " " + (cornerArray[i] >> 3));
         }
-        sb.append("\n");
+        stringBuilder.append("\n");
         for (int i = 0; i < 12; i++) {
-            sb.append("|" + (ea[i] >> 1) + " " + (ea[i] & 1));
+            stringBuilder.append("|" + (edgeArray[i] >> 1) + " " + (edgeArray[i] & 1));
         }
-        return sb.toString();
+        return stringBuilder.toString();
     }
 
-    static void initSym() {
-        CubieCube c = new CubieCube();
-        CubieCube d = new CubieCube();
-        CubieCube t;
+    static void initializeSymmetries() {
+        CubieCube cube = new CubieCube();
+        CubieCube tempCube = new CubieCube();
+        CubieCube swap;
 
         CubieCube f2 = new CubieCube(28783, 0, 259268407, 0);
         CubieCube u4 = new CubieCube(15138, 0, 119765538, 7);
         CubieCube lr2 = new CubieCube(5167, 0, 83473207, 0);
         for (int i = 0; i < 8; i++) {
-            lr2.ca[i] |= 3 << 3;
+            lr2.cornerArray[i] |= 3 << 3;
         }
 
         for (int i = 0; i < 16; i++) {
-            CubeSym[i] = new CubieCube(c);
-            CornMultFull(c, u4, d);
-            EdgeMult(c, u4, d);
-            t = d;  d = c;  c = t;
+            cubeSymmetries[i] = new CubieCube(cube);
+            multiplyCornersFull(cube, u4, tempCube);
+            multiplyEdges(cube, u4, tempCube);
+            swap = tempCube;  tempCube = cube;  cube = swap;
             if (i % 4 == 3) {
-                CornMultFull(c, lr2, d);
-                EdgeMult(c, lr2, d);
-                t = d;  d = c;  c = t;
+                multiplyCornersFull(cube, lr2, tempCube);
+                multiplyEdges(cube, lr2, tempCube);
+                swap = tempCube;  tempCube = cube;  cube = swap;
             }
             if (i % 8 == 7) {
-                CornMultFull(c, f2, d);
-                EdgeMult(c, f2, d);
-                t = d;  d = c;  c = t;
+                multiplyCornersFull(cube, f2, tempCube);
+                multiplyEdges(cube, f2, tempCube);
+                swap = tempCube;  tempCube = cube;  cube = swap;
             }
         }
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                CornMultFull(CubeSym[i], CubeSym[j], c);
+                multiplyCornersFull(cubeSymmetries[i], cubeSymmetries[j], cube);
                 for (int k = 0; k < 16; k++) {
-                    if (Arrays.equals(CubeSym[k].ca, c.ca)) {
-                        SymMult[i][j] = k; // SymMult[i][j] = (k ^ i ^ j ^ (0x14ab4 >> j & i << 1 & 2)));
-                        SymMultInv[k][j] = i; // i * j = k => k * j^-1 = i
+                    if (Arrays.equals(cubeSymmetries[k].cornerArray, cube.cornerArray)) {
+                        symmetryMultiplication[i][j] = k;
+                        inverseSymmetryMultiplication[k][j] = i;
                         break;
                     }
                 }
@@ -377,108 +372,112 @@ public class CubieCube {
         }
         for (int j = 0; j < 18; j++) {
             for (int s = 0; s < 16; s++) {
-                CornConjugate(moveCube[j], SymMultInv[0][s], c);
+                conjugateCorners(moveCubes[j], inverseSymmetryMultiplication[0][s], cube);
                 for (int m = 0; m < 18; m++) {
-                    if (Arrays.equals(moveCube[m].ca, c.ca)) {
-                        SymMove[s][j] = m;
-                        SymMoveUD[s][Util.std2ud[j]] = Util.std2ud[m];
+                    if (Arrays.equals(moveCubes[m].cornerArray, cube.cornerArray)) {
+                        symmetryMoves[s][j] = m;
+                        symmetryMoveUD[s][Util.std2ud[j]] = Util.std2ud[m];
                         break;
                     }
                 }
                 if (s % 2 == 0) {
-                    Sym8Move[j << 3 | s >> 1] = SymMove[s][j];
+                    symmetry8Moves[j << 3 | s >> 1] = symmetryMoves[s][j];
                 }
             }
         }
 
         for (int i = 0; i < 18; i++) {
-            moveCubeSym[i] = moveCube[i].selfSymmetry();
+            moveCubeSymmetries[i] = moveCubes[i].selfSymmetry();
             int j = i;
             for (int s = 0; s < 48; s++) {
-                if (SymMove[s % 16][j] < i) {
-                    firstMoveSym[s] |= 1 << i;
+                if (symmetryMoves[s % 16][j] < i) {
+                    firstMoveSymmetries[s] |= 1 << i;
                 }
                 if (s % 16 == 15) {
-                    j = urfMove[2][j];
+                    j = urfMoves[2][j];
                 }
             }
         }
     }
 
-    static int initSym2Raw(final int N_RAW, char[] Sym2Raw, char[] Raw2Sym, char[] SymState, int coord) {
+    static int initializeSymmetryToRaw(final int N_RAW, char[] symmetryToRaw, char[] rawToSymmetry, char[] symmetryState, int coordinate) {
         final int N_RAW_HALF = (N_RAW + 1) / 2;
-        CubieCube c = new CubieCube();
-        CubieCube d = new CubieCube();
-        int count = 0, idx = 0;
-        int sym_inc = coord >= 2 ? 1 : 2;
-        boolean isEdge = coord != 1;
+        CubieCube cube = new CubieCube();
+        CubieCube tempCube = new CubieCube();
+        int count = 0, index = 0;
+        int symmetryIncrement = coordinate >= 2 ? 1 : 2;
+        boolean isEdge = coordinate != 1;
 
         for (int i = 0; i < N_RAW; i++) {
-            if (Raw2Sym[i] != 0) {
+            if (rawToSymmetry[i] != 0) {
                 continue;
             }
-            switch (coord) {
-                case 0: c.setFlip(i); break;
-                case 1: c.setTwist(i); break;
-                case 2: c.setEPerm(i); break;
+            switch (coordinate) {
+                case 0: cube.setFlip(i); break;
+                case 1: cube.setTwist(i); break;
+                case 2: cube.setEdgePermutation(i); break;
             }
-            for (int s = 0; s < 16; s += sym_inc) {
+            for (int s = 0; s < 16; s += symmetryIncrement) {
                 if (isEdge) {
-                    EdgeConjugate(c, s, d);
+                    conjugateEdges(cube, s, tempCube);
                 } else {
-                    CornConjugate(c, s, d);
+                    conjugateCorners(cube, s, tempCube);
                 }
-                switch (coord) {
-                    case 0: idx = d.getFlip();
+                switch (coordinate) {
+                    case 0: index = tempCube.getFlip();
                         break;
-                    case 1: idx = d.getTwist();
+                    case 1: index = tempCube.getTwist();
                         break;
-                    case 2: idx = d.getEPerm();
+                    case 2: index = tempCube.getEdgePermutation();
                         break;
                 }
-                if (coord == 0 && Search.USE_TWIST_FLIP_PRUN) {
-                    FlipS2RF[count << 3 | s >> 1] = (char) idx;
+                if (coordinate == 0 && Search.USE_TWIST_FLIP_PRUN) {
+                    flipSymmetryToRawFull[count << 3 | s >> 1] = (char) index;
                 }
-                if (idx == i) {
-                    SymState[count] |= 1 << (s / sym_inc);
+                if (index == i) {
+                    symmetryState[count] |= 1 << (s / symmetryIncrement);
                 }
-                int symIdx = (count << 4 | s) / sym_inc;
-                Raw2Sym[idx] = (char) symIdx;
+                int symmetryIndex = (count << 4 | s) / symmetryIncrement;
+                rawToSymmetry[index] = (char) symmetryIndex;
             }
-            Sym2Raw[count++] = (char) i;
+            symmetryToRaw[count++] = (char) i;
         }
         return count;
     }
 
-    static void initFlipSym2Raw() {
-        initSym2Raw(CoordCube.N_FLIP, FlipS2R, FlipR2S,
-                SymStateFlip = new char[CoordCube.N_FLIP_SYM], 0);
+    static void initializeFlipSymmetryToRaw() {
+        initializeSymmetryToRaw(CoordCube.N_FLIP, flipSymmetryToRaw, flipRawToSymmetry,
+                symmetryStateFlip = new char[CoordCube.N_FLIP_SYM], 0);
     }
 
-    static void initTwistSym2Raw() {
-        initSym2Raw(CoordCube.N_TWIST, TwistS2R, TwistR2S,
-                SymStateTwist = new char[CoordCube.N_TWIST_SYM], 1);
+    static void initializeTwistSymmetryToRaw() {
+        initializeSymmetryToRaw(CoordCube.N_TWIST, twistSymmetryToRaw, twistRawToSymmetry,
+                symmetryStateTwist = new char[CoordCube.N_TWIST_SYM], 1);
     }
 
-    static void initPermSym2Raw() {
-        initSym2Raw(CoordCube.N_PERM, EPermS2R, EPermR2S,
-                SymStatePerm = new char[CoordCube.N_PERM_SYM], 2);
-        CubieCube cc = new CubieCube();
+    static void initializePermutationSymmetryToRaw() {
+        initializeSymmetryToRaw(CoordCube.N_PERM, edgePermutationSymmetryToRaw, edgePermutationRawToSymmetry,
+                symmetryStatePermutation = new char[CoordCube.N_PERM_SYM], 2);
+        CubieCube cube = new CubieCube();
         for (int i = 0; i < CoordCube.N_PERM_SYM; i++) {
-            cc.setEPerm(EPermS2R[i]);
-            Perm2CombP[i] = (byte) (Util.getComb(cc.ea, 0, true) + (Search.USE_COMBP_PRUN ? Util.getNParity(EPermS2R[i], 8) * 70 : 0));
-            cc.invCubieCube();
-            PermInvEdgeSym[i] = (char) cc.getEPermSym();
+            cube.setEdgePermutation(edgePermutationSymmetryToRaw[i]);
+            permutationToCombinationP[i] = (byte) (Util.getComb(cube.edgeArray, 0, true) + (Search.USE_COMBP_PRUN ? Util.getNParity(edgePermutationSymmetryToRaw[i], 8) * 70 : 0));
+            cube.invertCubieCube();
+            inverseEdgePermutationSymmetry[i] = (char) cube.getEdgePermutationSymmetry();
         }
         for (int i = 0; i < CoordCube.N_MPERM; i++) {
-            cc.setMPerm(i);
-            cc.invCubieCube();
-            MPermInv[i] = (byte) cc.getMPerm();
+            cube.setMiddlePermutation(i);
+            cube.invertCubieCube();
+            inverseMiddlePermutation[i] = (byte) cube.getMiddlePermutation();
         }
     }
 
     static {
-        CubieCube.initMove();
-        CubieCube.initSym();
+        CubieCube.initializeMoves();
+        CubieCube.initializeSymmetries();
+    }
+
+    static int edgeSymmetryToCornerSymmetry(int index) {
+        return index ^ (SYMMETRY_EDGE_TO_CORNER_MAGIC >> ((index & 0xf) << 1) & 3);
     }
 }
